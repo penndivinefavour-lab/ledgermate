@@ -1,0 +1,37 @@
+{
+  "team_id": "1146006-ledgermate-offline-sme-bookkeeping-assistant",
+  "domain": "corporate_enterprise",
+  "language_scope": ["en"],
+  "african_alpha_claim": true,
+  "budget_laptop_claim": true,
+  "submitter": {
+    "name": "Penn Divine Favour",
+    "email": "REPLACE_WITH_ACTUAL_EMAIL",
+    "github_handle": "penndivinefavour-lab"
+  },
+  "cross_disciplinary_pairing": {
+    "discipline": "small_business_development",
+    "load_bearing": true,
+    "description": "Offline bookkeeping assistant for African SME owners"
+  },
+  "test_prompts": [
+    {
+      "prompt_id": "tp_001",
+      "prompt": "Record a sale of 2500 XAF cash for smilies sold to customer Alpha on 2026-08-20."
+    },
+    {
+      "prompt_id": "tp_002",
+      "prompt": "Pay office electricity bill of 15,000 XAF by bank transfer on 2026-08-20; show remaining balance."
+    }
+  ],
+  "model": {
+    "name": "Llama-3.2-1B-Instruct-Q4_K_M",
+    "runtime": "llama.cpp",
+    "quantization": "GGUF Q4_K_M",
+    "parameters_estimate": "1B",
+    "packaging": "binary_bundle"
+  },
+  "_runtime": {
+    "model_path": "model/llama-3.2-1b-instruct-q4_k_m.gguf"
+  }
+}
