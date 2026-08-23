@@ -13,5 +13,3 @@ tmp_*
 .vscode/
 Thumbs.db
 .DS_Store
-*.json
-*.json

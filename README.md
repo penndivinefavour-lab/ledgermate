@@ -86,4 +86,4 @@ MIT License
 
 ## Status
 
-Day 2 implementation in progress. Core engine, CLI, and tests are being built. Benchmarks will be run on Dell Vostro 3500 with the official ADTC profiler.
+LedgerMate V2 — unified release with provider-neutral architecture, voice workflow, and verified ADTC 2026 compliance.

@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.1.0",
+  "profiler_version": "adtc-profiler 0.1.0",
+  "submission": {
+    "team_id": "1146006-ledgermate-offline-sme-bookkeeping-assistant",
+    "domain": "corporate_enterprise",
+    "language_scope": [
+      "en"
+    ],
+    "african_alpha_claim": true,
+    "budget_laptop_claim": true,
+    "submitter": {
+      "name": "Penn Divine Favour",
+      "email": "penndivinefavour3@gmail.com",
+      "github_handle": "penndivinefavour-lab"
+    },
+    "cross_disciplinary_pairing": {
+      "discipline": "small_business_development",
+      "load_bearing": true,
+      "description": "Offline bookkeeping assistant for African SME owners"
+    },
+    "test_prompts": [
+      {
+        "prompt_id": "tp_001",
+        "prompt": "Record a sale of 2500 XAF cash for smiles sold to customer Alpha on 2026-08-20."
+      },
+      {
+        "prompt_id": "tp_002",
+        "prompt": "Pay office electricity bill of 15,000 XAF by bank transfer on 2026-08-20; show remaining balance."
+      }
+    ],
+    "model": {
+      "name": "Llama-3.2-1B-Instruct-Q4_K_M",
+      "runtime": "llama.cpp",
+      "quantization": "GGUF Q4_K_M",
+      "parameters_estimate": "1B",
+      "packaging": "binary_bundle"
+    }
+  },
+  "environment": {
+    "measured_on": "participant_laptop",
+    "cpu_model": "11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz",
+    "ram_gb": 7.6,
+    "gpu": "none",
+    "os": "Ubuntu 22.04.5 LTS"
+  },
+  "throughput": {
+    "tokens_per_second_generation": 17.12,
+    "first_token_latency_ms": 6185.84,
+    "prompt_tokens": 512,
+    "generated_tokens": 128
+  },
+  "memory": {
+    "peak_rss_mb": 1379.02,
+    "steady_state_rss_mb": 1303.31,
+    "peak_vms_mb": 1777.82
+  },
+  "accuracy": [],
+  "cpu_thermal": {
+    "cpu_percent_p99": 54.7,
+    "core_temp_c_peak": null,
+    "throttled": false
+  },
+  "reproducibility": {
+    "git_commit_sha": "78d93cb3542ea74ace0abe7723bfe3d1f39ec44e",
+    "docker_image_digest": "unknown",
+    "random_seed": 42
+  },
+  "model_info": {
+    "params_count": 1235814432,
+    "context_length": 131072,
+    "architecture": "llama",
+    "claimed_params_estimate": "1B",
+    "params_match": false
+  }
+}
