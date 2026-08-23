@@ -1,3 +1,4 @@
-"""LedgerMate — Offline SME Bookkeeping Assistant."""
+"""LedgerMate V2 — Offline SME Bookkeeping Assistant."""
+from __future__ import annotations
 
-__version__ = "0.1.0"
+__version__ = "2.0.0-dev"
