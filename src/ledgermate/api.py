@@ -615,9 +615,25 @@ def delete_conversation(conv_id: str) -> dict:
 
 
 def _port_in_use(host: str, port: int) -> bool:
+    try:
+        output = os.popen(f"netstat -ano | findstr :{port}").read()
+    except Exception:
+        return False
+    for line in output.splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and parts[1].endswith(f":{port}") and parts[-2].upper() == "LISTENING":
+            return True
+    return False
+
+
+def _can_bind(host: str, port: int) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.settimeout(1)
-        return sock.connect_ex((host, port)) == 0
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind((host, port))
+            return True
+        except OSError:
+            return False
 
 
 def _owner_process(port: int) -> dict | None:
@@ -658,7 +674,7 @@ def _is_ledgermate_health(host: str, port: int) -> bool:
 
 
 def _safe_default_port(host: str, preferred_port: int) -> tuple[str, int]:
-    if not _port_in_use(host, preferred_port):
+    if not _port_in_use(host, preferred_port) and _can_bind(host, preferred_port):
         return host, preferred_port
     owner = _owner_process(preferred_port)
     ledgermate_running = bool(owner and _is_ledgermate_health(host, preferred_port))
@@ -670,7 +686,7 @@ def _safe_default_port(host: str, preferred_port: int) -> tuple[str, int]:
         print(f"[LedgerMate] Open that URL instead of starting another instance.")
         sys.exit(0)
     fallback = preferred_port + 1
-    while _port_in_use(host, fallback):
+    while not _can_bind(host, fallback):
         fallback += 1
     print(f"[LedgerMate] Falling back to http://{host}:{fallback}")
     return host, fallback
