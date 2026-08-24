@@ -15,7 +15,7 @@ class LlamaCppProvider(LLMProvider):
     available = False  # set True when executable + model exist
 
     def __init__(self, model_path: Path | None = None, exe_path: Path | None = None) -> None:
-        self.model_path = model_path or Path(__file__).resolve().parents[3] / "model" / "llama-3.2-1b-instruct-q4_k_m.gguf"
+        self.model_path = model_path or Path(__file__).resolve().parents[2] / "model" / "llama-3.2-1b-instruct-q4_k_m.gguf"
         self.exe_path = exe_path or self._find_executable()
         self.available = self.model_path.exists() and bool(self.exe_path)
 
@@ -23,8 +23,8 @@ class LlamaCppProvider(LLMProvider):
         candidates = [
             "llama-cli",
             "llama-server",
-            str(Path(__file__).resolve().parents[3] / "bin" / "llama-cli.exe"),
-            str(Path(__file__).resolve().parents[3] / "bin" / "main.exe"),
+            str(Path(__file__).resolve().parents[2] / "bin" / "llama-cli.exe"),
+            str(Path(__file__).resolve().parents[2] / "bin" / "main.exe"),
         ]
         for name in candidates:
             result = subprocess.run(["where", name] if os.name == "nt" else ["which", name], capture_output=True, text=True)
@@ -50,9 +50,10 @@ class LlamaCppProvider(LLMProvider):
             "--temp", "0.0",
             "-ngl", "0",
             "--log-disable",
+            "-st",
         ]
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True, stdin=subprocess.PIPE)
         except subprocess.CalledProcessError as exc:
             raise RuntimeError(f"llama.cpp failed: {exc.stderr}") from exc
 

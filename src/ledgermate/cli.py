@@ -52,6 +52,15 @@ def run_cli(ledger_path: Path = DEFAULT_LEDGER) -> None:
         if user_input.strip().lower() in {"exit", "quit"}:
             print("Goodbye.")
             return
+        if user_input.strip().lower() == "help":
+            print("Type a transaction, or commands: balance, list, export, exit")
+            print("help       - show this help")
+            print("balance    - show income/expense/net")
+            print("list       - show all transactions")
+            print("export     - export to CSV and JSON")
+            print("exit       - exit LedgerMate")
+            continue
+
         if user_input.strip().lower() == "balance":
             bal = ledger.balance()
             print(f"Income: {bal['income']} {bal['currency']}")

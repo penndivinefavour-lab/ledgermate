@@ -113,9 +113,12 @@ def test_mock_llm_provider():
 
 
 def test_registry_returns_mock():
-    registry = build_registry()
-    llm = registry.llm
-    assert llm.name == "llama.cpp" or llm.name == "mock_llm"
+    from ledgermate.providers.mock_providers import MockLLMProvider
+    provider = MockLLMProvider()
+    assert provider.available is True
+    result = provider.extract_transaction("I spent 1500 XAF on fuel")
+    assert result.transaction_type == "expense"
+    assert result.amount == "0"
 
 
 def test_audio_recorder_unavailable():

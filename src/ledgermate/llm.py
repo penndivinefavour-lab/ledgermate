@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-MODEL_PATH = Path(__file__).resolve().parents[3] / "model" / "llama-3.2-1b-instruct-q4_k_m.gguf"
+MODEL_PATH = Path(__file__).resolve().parents[2] / "model" / "llama-3.2-1b-instruct-q4_k_m.gguf"
 
 
 def _find_llama_executable() -> str:
@@ -16,8 +16,8 @@ def _find_llama_executable() -> str:
         "llama-cli",
         "llama-server",
         "main",
-        str(Path(__file__).resolve().parents[3] / "bin" / "llama-cli.exe"),
-        str(Path(__file__).resolve().parents[3] / "bin" / "main.exe"),
+        str(Path(__file__).resolve().parents[2] / "bin" / "llama-cli.exe"),
+        str(Path(__file__).resolve().parents[2] / "bin" / "main.exe"),
     ]
     for name in candidates:
         path = subprocess.run(
@@ -49,9 +49,10 @@ def run_llama(prompt: str, *, n_ctx: int = 1024, threads: int = 4, temperature: 
         "-ngl",
         "0",
         "--log-disable",
+        "-st",
     ]
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True, stdin=subprocess.PIPE)
     except subprocess.CalledProcessError as exc:
         raise RuntimeError(f"llama.cpp failed: {exc.stderr}") from exc
     return result.stdout.strip()

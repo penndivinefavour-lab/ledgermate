@@ -9,8 +9,14 @@ from ledgermate.providers.mock_providers import MockLLMProvider, MockSTTProvider
 
 def build_registry() -> ProviderRegistry:
     registry = ProviderRegistry()
-    registry.register_llm(LlamaCppProvider())
+    try:
+        registry.register_llm(LlamaCppProvider())
+    except Exception:
+        pass
     registry.register_llm(MockLLMProvider())
-    registry.register_stt(LocalSTTProvider())
+    try:
+        registry.register_stt(LocalSTTProvider())
+    except Exception:
+        pass
     registry.register_stt(MockSTTProvider())
     return registry
