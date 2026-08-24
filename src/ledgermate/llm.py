@@ -43,6 +43,14 @@ def _find_llama_executable() -> str:
         path = shutil.which(name)
         if path:
             return _validate_llama_executable(path)
+    winget_dir = Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Packages"
+    if winget_dir.exists():
+        for package_dir in winget_dir.iterdir():
+            if "llamacpp" in package_dir.name.lower() or "ggml" in package_dir.name.lower():
+                for exe_name in ["llama-cli.exe", "llama-server.exe", "llama-cli", "llama-server"]:
+                    candidate = package_dir / exe_name
+                    if candidate.exists() and candidate.is_file():
+                        return _validate_llama_executable(str(candidate))
     raise RuntimeError(
         "llama.cpp executable not found. Set LLAMA_CLI_PATH to the full path of llama-cli.exe."
     )

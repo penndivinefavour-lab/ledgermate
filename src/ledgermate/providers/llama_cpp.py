@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -20,17 +21,29 @@ class LlamaCppProvider(LLMProvider):
         self.available = self.model_path.exists() and bool(self.exe_path)
 
     def _find_executable(self) -> str:
-        candidates = [
-            "llama-cli",
-            "llama-server",
-            str(Path(__file__).resolve().parents[2] / "bin" / "llama-cli.exe"),
-            str(Path(__file__).resolve().parents[2] / "bin" / "main.exe"),
-        ]
-        for name in candidates:
-            result = subprocess.run(["where", name] if os.name == "nt" else ["which", name], capture_output=True, text=True)
-            if result.stdout.strip():
-                return result.stdout.strip().splitlines()[0]
-        raise FileNotFoundError("llama.cpp executable not found on PATH")
+        env_path = os.environ.get("LLAMA_CLI_PATH")
+        if env_path:
+            path = Path(env_path)
+            if not path.exists() or path.is_dir():
+                raise RuntimeError(f"llama.cpp executable not found: {env_path}")
+            if path.name.lower() not in {"llama-cli.exe", "llama-server.exe", "llama-cli", "llama-server"}:
+                raise RuntimeError(f"Invalid llama.cpp executable: {env_path}")
+            return str(path.resolve())
+        for name in ["llama-cli", "llama-cli.exe", "llama-server", "llama-server.exe"]:
+            path = shutil.which(name)
+            if path:
+                return path
+        winget_dir = Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Packages"
+        if winget_dir.exists():
+            for package_dir in winget_dir.iterdir():
+                if "llamacpp" in package_dir.name.lower() or "ggml" in package_dir.name.lower():
+                    for exe_name in ["llama-cli.exe", "llama-server.exe", "llama-cli", "llama-server"]:
+                        candidate = package_dir / exe_name
+                        if candidate.exists() and candidate.is_file():
+                            return str(candidate.resolve())
+        raise RuntimeError(
+            "llama.cpp executable not found. Set LLAMA_CLI_PATH to the full path of llama-cli.exe."
+        )
 
     def extract_transaction(self, transcript: str) -> ExtractedTransaction:
         structured_prompt = (

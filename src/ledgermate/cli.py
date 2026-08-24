@@ -87,6 +87,11 @@ def run_cli(ledger_path: Path = DEFAULT_LEDGER) -> None:
         except Exception as exc:
             print(f"[yellow]Validation error: {exc}[/yellow]")
             txn = validate_transaction(_fallback_transaction_from_text(user_input))
+        print(f"[yellow]Proposed:[/yellow] {txn.date} {txn.type} {txn.amount} {txn.currency} — {txn.description}")
+        confirm = Prompt.ask("[bold yellow]Save this transaction?[/bold yellow]", choices=["y", "n"], default="y")
+        if confirm.lower() != "y":
+            print("[yellow]Transaction not saved.[/yellow]")
+            continue
         ledger.add_transaction(txn)
         print(f"[green]Recorded:[/green] {txn.date} {txn.type} {txn.amount} {txn.currency} — {txn.description}")
 
