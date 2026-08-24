@@ -205,23 +205,34 @@
           <div class="grid grid-4">
             <div class="card kpi">
               <div class="label">Income</div>
-              <div class="value" id="kpi-income" style="color:#059669;">0 XAF</div>
+              <div class="value" id="kpi-income" style="color:#059669;">0</div>
               <div class="sub" id="kpi-income-sub">No income yet</div>
             </div>
             <div class="card kpi">
               <div class="label">Expenses</div>
-              <div class="value" id="kpi-expenses" style="color:#dc2626;">0 XAF</div>
+              <div class="value" id="kpi-expenses" style="color:#dc2626;">0</div>
               <div class="sub" id="kpi-expenses-sub">No expenses yet</div>
             </div>
             <div class="card kpi">
               <div class="label">Net Profit</div>
-              <div class="value" id="kpi-profit">0 XAF</div>
+              <div class="value" id="kpi-profit">0</div>
               <div class="sub" id="kpi-profit-sub">Income minus expenses</div>
             </div>
             <div class="card kpi">
               <div class="label">Cash Position</div>
-              <div class="value" id="kpi-cash">0 XAF</div>
+              <div class="value" id="kpi-cash">0</div>
               <div class="sub" id="kpi-cash-sub">Available cash</div>
+            </div>
+          </div>
+
+          <div class="grid grid-2 section">
+            <div class="card">
+              <h3>Income vs Expenses</h3>
+              <div id="chart-income-expense"><div class="empty">Not enough data to show a chart yet.</div></div>
+            </div>
+            <div class="card">
+              <h3>Expense Breakdown</h3>
+              <div id="chart-expense-breakdown"><div class="empty">No expense data available.</div></div>
             </div>
           </div>
 
@@ -231,8 +242,8 @@
               <div id="business-health"><div class="empty">Add transactions to see insights.</div></div>
             </div>
             <div class="card">
-              <h3>Top Expense Categories</h3>
-              <div id="top-expenses"><div class="empty">No expense data available.</div></div>
+              <h3>Updates & Reminders</h3>
+              <div id="updates-reminders"><div class="empty">No updates right now.</div></div>
             </div>
             <div class="card">
               <h3>Smart Insight</h3>
@@ -277,7 +288,7 @@
           <div class="card">
             <h3>Invoices</h3>
             <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Create and manage invoices locally.</p>
-            <button class="btn btn-primary" onclick="createInvoice()">New Invoice</button>
+            <button class="btn btn-primary" onclick="openInvoiceModal()">New Invoice</button>
             <div id="invoice-result" style="margin-top:10px;"></div>
           </div>
           <div class="card section">
@@ -291,11 +302,12 @@
           <div class="card">
             <h3>Customers</h3>
             <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Local customer directory for invoicing.</p>
-            <button class="btn btn-primary" onclick="addCustomer()">Add Customer</button>
+            <button class="btn btn-primary" onclick="openCustomerModal()">Add Customer</button>
             <div id="customer-result" style="margin-top:10px;"></div>
           </div>
           <div class="card section">
             <h3>Customer List</h3>
+            <input id="customer-search" class="input" placeholder="Search customers..." style="margin-bottom:10px;" oninput="renderCustomers()" />
             <div id="customer-list"><div class="empty">No customers yet.</div></div>
           </div>
         </div>
@@ -305,11 +317,12 @@
           <div class="card">
             <h3>Products & Services</h3>
             <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Catalog for faster invoice creation.</p>
-            <button class="btn btn-primary" onclick="addProduct()">Add Product</button>
+            <button class="btn btn-primary" onclick="openProductModal()">Add Product</button>
             <div id="product-result" style="margin-top:10px;"></div>
           </div>
           <div class="card section">
             <h3>Product List</h3>
+            <input id="product-search" class="input" placeholder="Search products..." style="margin-bottom:10px;" oninput="renderProducts()" />
             <div id="product-list"><div class="empty">No products yet.</div></div>
           </div>
         </div>
@@ -394,28 +407,33 @@
         <div id="page-settings" class="page">
           <div class="grid grid-2">
             <div class="card">
-              <h3>Business</h3>
-              <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
-                <div>
-                  <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Business Name</label>
-                  <input id="setting-business-name" class="input" placeholder="My Business" />
-                </div>
-                <div>
-                  <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Currency</label>
-                  <input id="setting-currency" class="input" value="XAF" />
-                </div>
-                <div>
-                  <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Language</label>
-                  <select id="setting-language" class="select">
-                    <option value="en">English</option>
-                    <option value="fr">French</option>
-                    <option value="es">Spanish</option>
-                    <option value="pt">Portuguese</option>
-                    <option value="ar">Arabic</option>
-                    <option value="sw">Swahili</option>
-                    <option value="ha">Hausa</option>
-                  </select>
-                </div>
+              <h3>Business Profile</h3>
+              <div class="form">
+                <label>Business Name</label>
+                <input id="setting-business-name" class="input" placeholder="My Business" />
+                <label>Owner</label>
+                <input id="setting-owner" class="input" placeholder="Owner name" />
+                <label>Phone</label>
+                <input id="setting-phone" class="input" placeholder="+237 600000000" />
+                <label>Email</label>
+                <input id="setting-email" class="input" placeholder="demo@example.local" />
+                <label>Location</label>
+                <input id="setting-location" class="input" placeholder="Douala, Cameroon" />
+                <label>Description</label>
+                <input id="setting-description" class="input" placeholder="Small retail food business." />
+                <label>Currency</label>
+                <input id="setting-currency" class="input" value="XAF" />
+                <label>Language</label>
+                <select id="setting-language" class="select">
+                  <option value="en">English</option>
+                  <option value="fr">French</option>
+                  <option value="es">Spanish</option>
+                  <option value="pt">Portuguese</option>
+                  <option value="ar">Arabic</option>
+                  <option value="de">German</option>
+                  <option value="zh">Chinese</option>
+                </select>
+                <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
               </div>
             </div>
             <div class="card">
@@ -434,17 +452,46 @@
 
   <div class="toast" id="toast"></div>
 
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal" id="modal">
+      <h3 id="modal-title">Confirm</h3>
+      <div id="modal-body"></div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="modal-confirm-btn" onclick="modalConfirm()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_BASE = '/api';
     let currentPage = 'dashboard';
     let transactions = [];
     let dashboardData = null;
+    let modalResolve = null;
 
     function toast(msg) {
       const el = document.getElementById('toast');
       el.textContent = msg;
       el.classList.add('show');
       setTimeout(() => el.classList.remove('show'), 2400);
+    }
+
+    function openModal(title, bodyHtml) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').innerHTML = bodyHtml;
+      document.getElementById('modal-backdrop').classList.add('open');
+      return new Promise((resolve) => { modalResolve = resolve; });
+    }
+    function closeModal() {
+      document.getElementById('modal-backdrop').classList.remove('open');
+      if (modalResolve) modalResolve(false);
+      modalResolve = null;
+    }
+    function modalConfirm() {
+      document.getElementById('modal-backdrop').classList.remove('open');
+      if (modalResolve) modalResolve(true);
+      modalResolve = null;
     }
 
     function showPage(page) {
@@ -483,20 +530,92 @@
       return res.status === 204 ? null : res.json();
     }
 
-    function fmt(n) {
-      const num = parseFloat(n || '0');
-      if (Number.isNaN(num)) return '0 XAF';
-      return `${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} XAF`;
-    }
-
     function fmtDate(d) {
       if (!d) return '';
       const dt = new Date(d + 'T00:00:00');
       return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
-    function timeAgo() {
-      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    let appSettings = { currency: 'XAF', language: 'en', profile: {} };
+
+    const i18n = {
+      en: {
+        dashboard:'Dashboard', transactions:'Transactions', invoices:'Invoices', customers:'Customers', products:'Products', reports:'Reports', assistant:'AI Assistant', exports:'Exports', trash:'Trash', settings:'Settings',
+        income:'Income', expenses:'Expenses', netProfit:'Net Profit', cashPosition:'Cash Position', today:'Today', thisWeek:'This Week', thisMonth:'This Month', thisYear:'This Year', allTime:'All Time',
+        refresh:'Refresh', addTransaction:'Add', describeTransaction:'Describe what happened in plain language.', noTransactions:'No transactions yet.', noInvoices:'No invoices yet.', noCustomers:'No customers yet.', noProducts:'No products yet.',
+        save:'Save Changes', saved:'Settings saved', cancel:'Cancel', confirm:'Confirm', permanentlyDelete:'Permanently delete?', deleteConfirm:'This cannot be undone.', newInvoice:'New Invoice', addCustomer:'Add Customer', addProduct:'Add Product',
+        customerName:'Customer Name', amount:'Amount', total:'Total', name:'Name', phone:'Phone', email:'Email', location:'Location', description:'Description', currency:'Currency', language:'Language',
+        privacyNote:'LedgerMate runs fully offline. No telemetry. No cloud AI. No remote analytics. Financial data never leaves this device during normal operation.',
+        askAmount:'What was the amount you paid for this?', reviewSave:'Please review before saving.', savedTransaction:'Transaction saved.'
+      },
+      fr: {
+        dashboard:'Tableau de bord', transactions:'Transactions', invoices:'Factures', customers:'Clients', products:'Produits', reports:'Rapports', assistant:'Assistant IA', exports:'Exports', trash:'Corbeille', settings:'Paramètres',
+        income:'Revenus', expenses:'Dépenses', netProfit:'Bénéfice net', cashPosition:'Trésorerie', today:'Aujourd\'hui', thisWeek:'Cette semaine', thisMonth:'Ce mois', thisYear:'Cette année', allTime:'Tout',
+        refresh:'Actualiser', addTransaction:'Ajouter', describeTransaction:'Décrivez ce qui s\'est passé en langage simple.', noTransactions:'Aucune transaction.', noInvoices:'Aucune facture.', noCustomers:'Aucun client.', noProducts:'Aucun produit.',
+        save:'Enregistrer', saved:'Paramètres enregistrés', cancel:'Annuler', confirm:'Confirmer', permanentlyDelete:'Supprimer définitivement ?', deleteConfirm:'Cette action est irréversible.', newInvoice:'Nouvelle facture', addCustomer:'Ajouter un client', addProduct:'Ajouter un produit',
+        customerName:'Nom du client', amount:'Montant', total:'Total', name:'Nom', phone:'Téléphone', email:'E-mail', location:'Localisation', description:'Description', currency:'Devise', language:'Langue',
+        privacyNote:'LedgerMate fonctionne hors ligne. Aucune télémétrie. Aucune IA cloud. Aucune analytique distante. Les données financières ne quittent jamais cet appareil.',
+        askAmount:'Quel montant avez-vous payé pour cela ?', reviewSave:'Veuillez vérifier avant d\'enregistrer.', savedTransaction:'Transaction enregistrée.'
+      },
+      es: { dashboard:'Panel', transactions:'Transacciones', invoices:'Facturas', customers:'Clientes', products:'Productos', reports:'Informes', assistant:'Asistente IA', exports:'Exportaciones', trash:'Papelera', settings:'Ajustes', income:'Ingresos', expenses:'Gastos', netProfit:'Beneficio neto', cashPosition:'Efectivo', today:'Hoy', thisWeek:'Esta semana', thisMonth:'Este mes', thisYear:'Este año', allTime:'Todo', refresh:'Actualizar', addTransaction:'Agregar', describeTransaction:'Describe lo que pasó.', noTransactions:'Sin transacciones.', noInvoices:'Sin facturas.', noCustomers:'Sin clientes.', noProducts:'Sin productos.', save:'Guardar', saved:'Ajustes guardados', cancel:'Cancelar', confirm:'Confirmar', permanentlyDelete:'¿Eliminar permanentemente?', deleteConfirm:'No se puede deshacer.', newInvoice:'Nueva factura', addCustomer:'Agregar cliente', addProduct:'Agregar producto', customerName:'Nombre del cliente', amount:'Importe', total:'Total', name:'Nombre', phone:'Teléfono', email:'Correo', location:'Ubicación', description:'Descripción', currency:'Moneda', language:'Idioma', privacyNote:'LedgerMate funciona sin conexión. Sin telemetría. Sin IA en la nube. Sin análisis externos.', askAmount:'¿Cuánto pagaste por esto?', reviewSave:'Revisa antes de guardar.', savedTransaction:'Transacción guardada.' },
+      pt: { dashboard:'Painel', transactions:'Transações', invoices:'Faturas', customers:'Clientes', products:'Produtos', reports:'Relatórios', assistant:'Assistente IA', exports:'Exportações', trash:'Lixeira', settings:'Configurações', income:'Receitas', expenses:'Despesas', netProfit:'Lucro líquido', cashPosition:'Caixa', today:'Hoje', thisWeek:'Esta semana', thisMonth:'Este mês', thisYear:'Este ano', allTime:'Tudo', refresh:'Atualizar', addTransaction:'Adicionar', describeTransaction:'Descreva o que aconteceu.', noTransactions:'Sem transações.', noInvoices:'Sem faturas.', noCustomers:'Sem clientes.', noProducts:'Sem produtos.', save:'Salvar', saved:'Configurações salvas', cancel:'Cancelar', confirm:'Confirmar', permanentlyDelete:'Excluir permanentemente?', deleteConfirm:'Isso não pode ser desfeito.', newInvoice:'Nova fatura', addCustomer:'Adicionar cliente', addProduct:'Adicionar produto', customerName:'Nome do cliente', amount:'Valor', total:'Total', name:'Nome', phone:'Telefone', email:'E-mail', location:'Local', description:'Descrição', currency:'Moeda', language:'Idioma', privacyNote:'LedgerMate funciona offline. Sem telemetria. Sem IA na nuvem. Sem análise externa.', askAmount:'Quanto você pagou por isso?', reviewSave:'Revise antes de salvar.', savedTransaction:'Transação salva.' },
+      ar: { dashboard:'لوحة القيادة', transactions:'المعاملات', invoices:'الفواتير', customers:'العملاء', products:'المنتجات', reports:'التقارير', assistant:'مساعد الذكاء الاصطناعي', exports:'تصدير', trash:'المحذوفات', settings:'الإعدادات', income:'الدخل', expenses:'المصروفات', netProfit:'صافي الربح', cashPosition:'النقد', today:'اليوم', thisWeek:'هذا الأسبوع', thisMonth:'هذا الشهر', thisYear:'هذه السنة', allTime:'الكل', refresh:'تحديث', addTransaction:'إضافة', describeTransaction:'صف ما حدث.', noTransactions:'لا توجد معاملات.', noInvoices:'لا توجد فواتير.', noCustomers:'لا يوجد عملاء.', noProducts:'لا يوجد منتجات.', save:'حفظ', saved:'تم حفظ الإعدادات', cancel:'إلغاء', confirm:'تأكيد', permanentlyDelete:'حذف نهائي؟', deleteConfirm:'لا يمكن التراجع عن هذا الإجراء.', newInvoice:'فاتورة جديدة', addCustomer:'إضافة عميل', addProduct:'إضافة منتج', customerName:'اسم العميل', amount:'المبلغ', total:'المجموع', name:'الاسم', phone:'الهاتف', email:'البريد', location:'الموقع', description:'الوصف', currency:'العملة', language:'اللغة', privacyNote:'LedgerMate يعمل بدون إنترنت. لا توجد اتصالات خارجية.', askAmount:'كم دفعت لهذا؟', reviewSave:'يرجى المراجعة قبل الحفظ.', savedTransaction:'تم حفظ المعاملة.' },
+      de: { dashboard:'Dashboard', transactions:'Transaktionen', invoices:'Rechnungen', customers:'Kunden', products:'Produkte', reports:'Berichte', assistant:'KI-Assistent', exports:'Exporte', trash:'Papierkorb', settings:'Einstellungen', income:'Einnahmen', expenses:'Ausgaben', netProfit:'Nettogewinn', cashPosition:'Liquidität', today:'Heute', thisWeek:'Diese Woche', thisMonth:'Dieser Monat', thisYear:'Dieses Jahr', allTime:'Gesamt', refresh:'Aktualisieren', addTransaction:'Hinzufügen', describeTransaction:'Beschreiben Sie, was passiert ist.', noTransactions:'Keine Transaktionen.', noInvoices:'Keine Rechnungen.', noCustomers:'Keine Kunden.', noProducts:'Keine Produkte.', save:'Speichern', saved:'Einstellungen gespeichert', cancel:'Abbrechen', confirm:'Bestätigen', permanentlyDelete:'Dauerhaft löschen?', deleteConfirm:'Dies kann nicht rückgängig gemacht werden.', newInvoice:'Neue Rechnung', addCustomer:'Kunden hinzufügen', addProduct:'Produkt hinzufügen', customerName:'Kundenname', amount:'Betrag', total:'Gesamt', name:'Name', phone:'Telefon', email:'E-Mail', location:'Standort', description:'Beschreibung', currency:'Währung', language:'Sprache', privacyNote:'LedgerMate arbeitet offline. Keine Telemetrie. Keine Cloud-KI.', askAmount:'Wie viel haben Sie dafür bezahlt?', reviewSave:'Bitte überprüfen Sie vor dem Speichern.', savedTransaction:'Transaktion gespeichert.' },
+      zh: { dashboard:'仪表板', transactions:'交易', invoices:'发票', customers:'客户', products:'产品', reports:'报表', assistant:'智能助手', exports:'导出', trash:'回收站', settings:'设置', income:'收入', expenses:'支出', netProfit:'净利润', cashPosition:'现金', today:'今天', thisWeek:'本周', thisMonth:'本月', thisYear:'今年', allTime:'全部', refresh:'刷新', addTransaction:'添加', describeTransaction:'用普通语言描述发生了什么。', noTransactions:'暂无交易。', noInvoices:'暂无发票。', noCustomers:'暂无客户。', noProducts:'暂无产品。', save:'保存', saved:'设置已保存', cancel:'取消', confirm:'确认', permanentlyDelete:'永久删除？', deleteConfirm:'此操作无法撤销。', newInvoice:'新建发票', addCustomer:'添加客户', addProduct:'添加产品', customerName:'客户名称', amount:'金额', total:'总计', name:'名称', phone:'电话', email:'电子邮件', location:'地址', description:'描述', currency:'货币', language:'语言', privacyNote:'LedgerMate 完全离线运行。无遥测。无云 AI。', askAmount:'您为此支付了多少钱？', reviewSave:'保存前请确认。', savedTransaction:'交易已保存。' }
+    };
+
+    function t(key) {
+      const lang = appSettings.language || 'en';
+      return (i18n[lang] && i18n[lang][key]) || i18n.en[key] || key;
+    }
+
+    function applyI18n() {
+      document.getElementById('page-title').textContent = t('dashboard');
+      document.getElementById('page-meta').textContent = t('thisMonth');
+      document.querySelectorAll('.nav-btn').forEach((btn, idx) => {
+        const keys = ['dashboard','transactions','invoices','customers','products','reports','assistant','exports','trash','settings'];
+        const span = btn.querySelector('span:last-child') || btn;
+        if (span && keys[idx]) span.lastChild.textContent = t(keys[idx]);
+      });
+    }
+
+    async function loadSettings() {
+      try {
+        appSettings = await api(`${API_BASE}/settings`);
+      } catch (e) {
+        appSettings = { currency: 'XAF', language: 'en', profile: {} };
+      }
+      document.getElementById('setting-currency')?.value && (document.getElementById('setting-currency').value = appSettings.financial?.currency || 'XAF');
+      document.getElementById('setting-language')?.value && (document.getElementById('setting-language').value = appSettings.language || 'en');
+      if (appSettings.profile?.business_name) {
+        document.querySelector('.brand h1').textContent = appSettings.profile.business_name;
+      }
+      applyI18n();
+    }
+
+    async function saveSettings() {
+      const payload = {
+        profile: {
+          business_name: document.getElementById('setting-business-name')?.value || '',
+          owner_name: document.getElementById('setting-owner')?.value || '',
+          phone: document.getElementById('setting-phone')?.value || '',
+          email: document.getElementById('setting-email')?.value || '',
+          address: document.getElementById('setting-location')?.value || '',
+          description: document.getElementById('setting-description')?.value || '',
+        },
+        financial: { currency: document.getElementById('setting-currency')?.value || 'XAF' },
+        language: document.getElementById('setting-language')?.value || 'en',
+      };
+      await api(`${API_BASE}/settings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      await loadSettings();
+      toast('Settings saved');
+    }
+
+    function fmt(n) {
+      const currency = appSettings.financial?.currency || appSettings.currency || 'XAF';
+      const num = parseFloat(n || '0');
+      if (Number.isNaN(num)) return `0 ${currency}`;
+      return `${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} ${currency}`;
     }
 
     async function refresh() {
@@ -533,11 +652,12 @@
       const health = computeHealth(dash);
       document.getElementById('business-health').innerHTML = health;
 
-      const topExpenses = Object.entries(cats?.expense_by_category || {}).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1])).slice(0, 5);
-      document.getElementById('top-expenses').innerHTML = topExpenses.length ? topExpenses.map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:14px;color:#475569;">${k}</span><span style="font-weight:700;color:#dc2626;">${fmt(v)}</span></div>`).join('') : '<div class="empty">No expense data available.</div>';
+      document.getElementById('updates-reminders').innerHTML = computeReminders(dash, txns || [], cats || {});
 
       const insight = computeInsight(dash, txns || []);
       document.getElementById('ai-insight').innerHTML = insight;
+
+      renderCharts(dash, txns || [], cats || {});
 
       const recent = (txns || []).slice(0, 8);
       document.getElementById('recent-transactions').innerHTML = recent.length ? `<div class="table-wrap"><table>
@@ -602,6 +722,73 @@
       return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="width:10px;height:10px;border-radius:50%;background:${color};"></span><span style="font-weight:700;">${status}</span></div><div style="color:#64748b;font-size:13px;">${reason}</div>`;
     }
 
+    function computeReminders(dash, txns, cats) {
+      const items = [];
+      if (!dash || !dash.transaction_count) items.push({text:'No transactions yet. Add your first transaction.', type:'info'});
+      if (dash && parseFloat(dash.expenses || '0') > parseFloat(dash.income || '0')) items.push({text:'Expenses exceed income this period.', type:'warning'});
+      const top = dash?.top_expense_category;
+      if (top) items.push({text:`Largest expense category: ${top}`, type:'info'});
+      if (!dash?.transaction_count) items.push({text:'Business profile is incomplete.', type:'warning'});
+      return items.length ? items.map(x => `<div style="padding:8px 0;border-bottom:1px solid #f1f5f9;"><span style="font-weight:700;">${x.type==='warning'?'⚠️':''}</span> ${x.text}</div>`).join('') : '<div class="empty">No updates right now.</div>';
+    }
+
+    function renderCharts(dash, txns, cats) {
+      const incomeExpense = document.getElementById('chart-income-expense');
+      const breakdown = document.getElementById('chart-expense-breakdown');
+      if (!incomeExpense || !breakdown) return;
+      const rows = txns || [];
+      const map = new Map();
+      const catMap = new Map();
+      for (const r of rows) {
+        const d = r.date || '';
+        if (!map.has(d)) map.set(d, {income:0,expense:0});
+        const amt = parseFloat(r.amount || '0');
+        if (r.type === 'income') map.get(d).income += amt; else map.get(d).expense += amt;
+        if (r.type === 'expense') {
+          const k = r.category || 'Other';
+          catMap.set(k, (catMap.get(k) || 0) + amt);
+        }
+      }
+      const entries = Array.from(map.entries()).slice(-8);
+      if (!entries.length) {
+        incomeExpense.innerHTML = '<div class="empty">Not enough data to show a chart yet.</div>';
+      } else {
+        const max = Math.max(1, ...entries.map(([,v]) => Math.max(v.income, v.expense)));
+        const bars = entries.map(([label, vals]) => {
+          const ih = Math.max(4, (vals.income / max) * 160);
+          const eh = Math.max(4, (vals.expense / max) * 160);
+          return `<div style="display:flex;align-items:flex-end;gap:6px;min-width:60px;">
+            <div style="flex:1;background:#10b981;height:${ih}px;border-radius:6px;" title="Income ${fmt(vals.income)}"></div>
+            <div style="flex:1;background:#ef4444;height:${eh}px;border-radius:6px;" title="Expenses ${fmt(vals.expense)}"></div>
+          </div>
+          <div style="font-size:11px;color:#64748b;margin-top:6px;text-align:center;">${fmtDate(label)}</div>`;
+        }).join('');
+        incomeExpense.innerHTML = `<div style="overflow-x:auto;display:flex;gap:14px;padding-bottom:8px;">${bars}</div>
+          <div style="display:flex;gap:10px;margin-top:8px;font-size:12px;color:#475569;">
+            <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;background:#10b981;border-radius:2px;display:inline-block;"></span>Income</span>
+            <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;background:#ef4444;border-radius:2px;display:inline-block;"></span>Expenses</span>
+          </div>`;
+      }
+
+      const cats = Object.entries(Object.fromEntries(catMap)).sort((a,b)=>b[1]-a[1]);
+      if (!cats.length) {
+        breakdown.innerHTML = '<div class="empty">No expense data available.</div>';
+      } else {
+        const total = cats.reduce((s, [,v]) => s + v, 0) || 1;
+        breakdown.innerHTML = cats.map(([k,v]) => {
+          const pct = ((v/total)*100).toFixed(1);
+          return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f1f5f9;">
+            <div style="flex:1;height:8px;background:#f1f5f9;border-radius:999px;overflow:hidden;">
+              <div style="width:${pct}%;height:100%;background:#ef4444;"></div>
+            </div>
+            <div style="width:110px;font-size:13px;color:#334155;">${k}</div>
+            <div style="width:70px;text-align:right;font-weight:700;">${fmt(v)}</div>
+            <div style="width:52px;text-align:right;color:#64748b;font-size:12px;">${pct}%</div>
+          </div>`;
+        }).join('');
+      }
+    }
+
     function computeInsight(dash, txns) {
       if (!dash || !txns.length) return '<div class="empty">Keep recording transactions for insights.</div>';
       const top = dash.top_expense_category;
@@ -622,6 +809,15 @@
       try {
         const res = await api(`${API_BASE}/transactions/nl`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
         if (res.error) { resultDiv.innerHTML = `<div class="error">${escapeHtml(res.error)}</div>`; toast('Transaction failed'); }
+        else if (res.needs_clarification) {
+          const amount = await openModal(res.clarification_prompt || t('askAmount'), '<input id="clarify-amount" class="input" placeholder="0" />');
+          if (!amount) { resultDiv.innerHTML = '<div style="color:#64748b;padding:8px 0;">Cancelled.</div>'; return; }
+          const confirmed = await openModal(t('reviewSave'), `<div>${escapeHtml(text)}</div><div style="margin-top:8px;"><strong>${t('amount')}:</strong> ${escapeHtml(amount)}</div>`);
+          if (!confirmed) { resultDiv.innerHTML = '<div style="color:#64748b;padding:8px 0;">Cancelled.</div>'; return; }
+          const finalRes = await api(`${API_BASE}/transactions/nl`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, amount }) });
+          if (finalRes.error) { resultDiv.innerHTML = `<div class="error">${escapeHtml(finalRes.error)}</div>`; toast('Transaction failed'); }
+          else { resultDiv.innerHTML = `<div class="success">${t('savedTransaction')} <strong>${fmt(finalRes.proposal?.amount)} ${finalRes.proposal?.currency || appSettings.financial?.currency || 'XAF'}</strong> — ${escapeHtml(finalRes.proposal?.description || '')}</div>`; input.value = ''; toast('Transaction saved'); refresh(); }
+        }
         else {
           resultDiv.innerHTML = `<div class="success">Transaction recorded! <strong>${fmt(res.proposal?.amount)} ${res.proposal?.currency || 'XAF'}</strong> — ${escapeHtml(res.proposal?.description || '')}</div>`;
           input.value = '';
@@ -649,6 +845,9 @@
       try {
         const res = await api(`${API_BASE}/assistant`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: q }) });
         thinking.innerHTML = `<div>${escapeHtml(res.answer)}<div class="meta">LedgerMate • ${timeAgo()}</div></div>`;
+        const convId = appSettings.conversationId;
+        if (convId) await api(`${API_BASE}/conversations/${encodeURIComponent(convId)}/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'user', content: q }) });
+        if (convId) await api(`${API_BASE}/conversations/${encodeURIComponent(convId)}/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'assistant', content: res.answer }) });
       } catch (err) {
         thinking.innerHTML = `<div class="error">Sorry, I couldn't process that.</div>`;
       }
@@ -668,7 +867,7 @@
     async function exportCSV() {
       try {
         const res = await fetch(`${API_BASE}/export/csv`);
-        if (!res.ok) return alert('No transactions to export');
+        if (!res.ok) { toast('No transactions to export'); return; }
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'transactions.csv'; a.click();
@@ -679,7 +878,7 @@
     async function exportJSON() {
       try {
         const res = await fetch(`${API_BASE}/export/json`);
-        if (!res.ok) return alert('No transactions to export');
+        if (!res.ok) { toast('No transactions to export'); return; }
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'transactions.json'; a.click();
@@ -711,11 +910,22 @@
     setInterval(refresh, 30000);
 
     // Extended page handlers
-    async function createInvoice() {
-      const name = prompt('Customer name:');
-      if (!name) return;
-      const items = [{ name: 'Item 1', quantity: 1, unit_price: 1000 }];
-      const payload = { customer_name: name, items, subtotal: 1000, tax: 0, discount: 0, total: 1000, currency: 'XAF', status: 'draft' };
+    async function openInvoiceModal() {
+      const templates = [
+        {id:'minimal', title:'Minimal', body:'<label>Customer Name</label><input id="inv-customer" class="input" placeholder="Customer name" /><label>Total</label><input id="inv-total" class="input" placeholder="0" />'},
+        {id:'detailed', title:'Detailed', body:'<label>Customer Name</label><input id="inv-customer" class="input" placeholder="Customer name" /><label>Items</label><input id="inv-items" class="input" placeholder="Item name x1 @ 0" /><label>Total</label><input id="inv-total" class="input" placeholder="0" />'}
+      ];
+      const tpl = templates[0];
+      const ok = await openModal('New Invoice', tpl.body);
+      if (!ok) return;
+      const customerName = document.getElementById('inv-customer')?.value?.trim();
+      const total = parseFloat(document.getElementById('inv-total')?.value || '0');
+      if (!customerName) return;
+      const items = [];
+      const rawItems = document.getElementById('inv-items')?.value?.trim();
+      if (rawItems) items.push({ name: rawItems, quantity: 1, unit_price: total || 0, total: total || 0 });
+      if (!items.length) items.push({ name: 'Item 1', quantity: 1, unit_price: total || 0, total: total || 0 });
+      const payload = { customer_name: customerName, items, subtotal: total || 0, tax: 0, discount: 0, total: total || 0, currency: appSettings.financial?.currency || appSettings.currency || 'XAF', status: 'draft', template: tpl.id };
       const res = await api(`${API_BASE}/invoices`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       toast('Invoice created');
       renderInvoices();
@@ -724,18 +934,31 @@
     async function renderInvoices() {
       const rows = await api(`${API_BASE}/invoices`);
       document.getElementById('invoice-list').innerHTML = rows.length ? `<div class="table-wrap"><table>
-        <thead><tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
+        <thead><tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody>${rows.map(r => `<tr>
           <td>${escapeHtml(r.invoice_id)}</td>
           <td>${escapeHtml(r.customer_name || '')}</td>
           <td>${fmt(r.total)}</td>
           <td><span class="badge" style="background:#f1f5f9;color:#475569;">${r.status}</span></td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="downloadInvoice('${escapeHtml(r.invoice_id)}', 'pdf')">PDF</button>
+            <button class="btn btn-secondary btn-sm" onclick="downloadInvoice('${escapeHtml(r.invoice_id)}', 'word')">Word</button>
+          </td>
         </tr>`).join('')}</tbody>
       </table></div>` : '<div class="empty">No invoices yet.</div>';
     }
 
-    async function addCustomer() {
-      const name = prompt('Customer name:');
+    async function downloadInvoice(id, format) {
+      const url = `${API_BASE}/invoices/${encodeURIComponent(id)}/${format}`;
+      const a = document.createElement('a'); a.href = url; a.download = `${id}.${format === 'word' ? 'docx' : 'pdf'}`; a.click();
+      toast('Downloading invoice');
+    }
+
+    async function openCustomerModal() {
+      const body = '<label>Name</label><input id="cust-name" class="input" placeholder="Customer name" />';
+      const ok = await openModal('New Customer', body);
+      if (!ok) return;
+      const name = document.getElementById('cust-name')?.value?.trim();
       if (!name) return;
       await api(`${API_BASE}/customers`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
       toast('Customer added');
@@ -743,20 +966,26 @@
     }
 
     async function renderCustomers() {
+      const q = (document.getElementById('customer-search')?.value || '').trim().toLowerCase();
       const rows = await api(`${API_BASE}/customers`);
-      document.getElementById('customer-list').innerHTML = rows.length ? `<div class="table-wrap"><table>
-        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th></tr></thead>
-        <tbody>${rows.map(r => `<tr>
+      const filtered = rows.filter(r => !q || (r.name||'').toLowerCase().includes(q) || (r.email||'').toLowerCase().includes(q) || (r.phone||'').toLowerCase().includes(q));
+      document.getElementById('customer-list').innerHTML = filtered.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Location</th></tr></thead>
+        <tbody>${filtered.map(r => `<tr>
           <td>${escapeHtml(r.customer_id)}</td>
           <td>${escapeHtml(r.name)}</td>
           <td>${escapeHtml(r.email || '')}</td>
           <td>${escapeHtml(r.phone || '')}</td>
+          <td>${escapeHtml(r.address || '')}</td>
         </tr>`).join('')}</tbody>
-      </table></div>` : '<div class="empty">No customers yet.</div>';
+      </table></div>` : '<div class="empty">No customers match your search.</div>';
     }
 
-    async function addProduct() {
-      const name = prompt('Product name:');
+    async function openProductModal() {
+      const body = '<label>Name</label><input id="prod-name" class="input" placeholder="Product name" />';
+      const ok = await openModal('New Product', body);
+      if (!ok) return;
+      const name = document.getElementById('prod-name')?.value?.trim();
       if (!name) return;
       await api(`${API_BASE}/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, selling_price: 1000 }) });
       toast('Product added');
@@ -764,16 +993,19 @@
     }
 
     async function renderProducts() {
+      const q = (document.getElementById('product-search')?.value || '').trim().toLowerCase();
       const rows = await api(`${API_BASE}/products`);
-      document.getElementById('product-list').innerHTML = rows.length ? `<div class="table-wrap"><table>
-        <thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Stock</th></tr></thead>
-        <tbody>${rows.map(r => `<tr>
+      const filtered = rows.filter(r => !q || (r.name||'').toLowerCase().includes(q) || (r.category||'').toLowerCase().includes(q));
+      document.getElementById('product-list').innerHTML = filtered.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th></tr></thead>
+        <tbody>${filtered.map(r => `<tr>
           <td>${escapeHtml(r.product_id)}</td>
           <td>${escapeHtml(r.name)}</td>
+          <td>${escapeHtml(r.category || '')}</td>
           <td>${fmt(r.selling_price)}</td>
           <td>${r.stock_quantity}</td>
         </tr>`).join('')}</tbody>
-      </table></div>` : '<div class="empty">No products yet.</div>';
+      </table></div>` : '<div class="empty">No products match your search.</div>';
     }
 
     async function renderTrash() {
@@ -799,7 +1031,8 @@
     }
 
     async function permanentDelete(id) {
-      if (!confirm('Permanently delete this item? This cannot be undone.')) return;
+      const ok = await openModal('Permanently delete?', 'This cannot be undone.');
+      if (!ok) return;
       await api(`${API_BASE}/trash/${encodeURIComponent(id)}`, { method: 'DELETE' });
       toast('Item permanently deleted');
       renderTrash();

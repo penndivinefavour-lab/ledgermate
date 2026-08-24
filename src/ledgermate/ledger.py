@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from typing import Iterable, Optional
@@ -194,11 +194,39 @@ class Ledger:
         finally:
             conn.close()
 
+    def soft_delete_transaction(self, transaction_id: str) -> None:
+        self._init_extended_schema()
+        conn = self._connect()
+        try:
+            row = conn.execute("SELECT * FROM transactions WHERE transaction_id = ?", (transaction_id,)).fetchone()
+            if row:
+                payload = json.dumps(dict(row))
+                conn.execute(
+                    "INSERT OR REPLACE INTO trash (item_id, collection, payload) VALUES (?, ?, ?)",
+                    (transaction_id, "transactions", payload),
+                )
+                conn.execute("DELETE FROM transactions WHERE transaction_id = ?", (transaction_id,))
+                conn.commit()
+        finally:
+            conn.close()
+
     def list_invoices(self) -> list[dict]:
         conn = self._connect()
         try:
             rows = conn.execute("SELECT * FROM invoices ORDER BY invoice_date ASC").fetchall()
-            return [dict(row) for row in rows]
+            result = []
+            for row in rows:
+                item = dict(row)
+                raw_items = item.get("items")
+                if isinstance(raw_items, str):
+                    try:
+                        item["items"] = json.loads(raw_items)
+                    except Exception:
+                        item["items"] = []
+                elif raw_items is None:
+                    item["items"] = []
+                result.append(item)
+            return result
         finally:
             conn.close()
 
@@ -243,12 +271,19 @@ class Ledger:
         finally:
             conn.close()
 
-    def delete_invoice(self, invoice_id: str) -> None:
+    def soft_delete_invoice(self, invoice_id: str) -> None:
         self._init_extended_schema()
         conn = self._connect()
         try:
-            conn.execute("DELETE FROM invoices WHERE invoice_id = ?", (invoice_id,))
-            conn.commit()
+            row = conn.execute("SELECT * FROM invoices WHERE invoice_id = ?", (invoice_id,)).fetchone()
+            if row:
+                payload = json.dumps(dict(row))
+                conn.execute(
+                    "INSERT OR REPLACE INTO trash (item_id, collection, payload) VALUES (?, ?, ?)",
+                    (invoice_id, "invoices", payload),
+                )
+                conn.execute("DELETE FROM invoices WHERE invoice_id = ?", (invoice_id,))
+                conn.commit()
         finally:
             conn.close()
 
@@ -283,11 +318,35 @@ class Ledger:
             conn.close()
         return {"customer_id": customer_id, **payload}
 
-    def delete_customer(self, customer_id: str) -> None:
+    def soft_delete_customer(self, customer_id: str) -> None:
+        self._init_extended_schema()
         conn = self._connect()
         try:
-            conn.execute("DELETE FROM customers WHERE customer_id = ?", (customer_id,))
-            conn.commit()
+            row = conn.execute("SELECT * FROM customers WHERE customer_id = ?", (customer_id,)).fetchone()
+            if row:
+                payload = json.dumps(dict(row))
+                conn.execute(
+                    "INSERT OR REPLACE INTO trash (item_id, collection, payload) VALUES (?, ?, ?)",
+                    (customer_id, "customers", payload),
+                )
+                conn.execute("DELETE FROM customers WHERE customer_id = ?", (customer_id,))
+                conn.commit()
+        finally:
+            conn.close()
+
+    def soft_delete_product(self, product_id: str) -> None:
+        self._init_extended_schema()
+        conn = self._connect()
+        try:
+            row = conn.execute("SELECT * FROM products WHERE product_id = ?", (product_id,)).fetchone()
+            if row:
+                payload = json.dumps(dict(row))
+                conn.execute(
+                    "INSERT OR REPLACE INTO trash (item_id, collection, payload) VALUES (?, ?, ?)",
+                    (product_id, "products", payload),
+                )
+                conn.execute("DELETE FROM products WHERE product_id = ?", (product_id,))
+                conn.commit()
         finally:
             conn.close()
 
@@ -325,11 +384,19 @@ class Ledger:
             conn.close()
         return {"product_id": product_id, **payload}
 
-    def delete_product(self, product_id: str) -> None:
+    def soft_delete_product(self, product_id: str) -> None:
+        self._init_extended_schema()
         conn = self._connect()
         try:
-            conn.execute("DELETE FROM products WHERE product_id = ?", (product_id,))
-            conn.commit()
+            row = conn.execute("SELECT * FROM products WHERE product_id = ?", (product_id,)).fetchone()
+            if row:
+                payload = json.dumps(dict(row))
+                conn.execute(
+                    "INSERT OR REPLACE INTO trash (item_id, collection, payload) VALUES (?, ?, ?)",
+                    (product_id, "products", payload),
+                )
+                conn.execute("DELETE FROM products WHERE product_id = ?", (product_id,))
+                conn.commit()
         finally:
             conn.close()
 
@@ -351,7 +418,6 @@ class Ledger:
             payload = json.loads(row["payload"])
             collection = row["collection"]
             if collection == "transactions":
-                payload["transaction_id"] = item_id
                 from ledgermate.validation import validate_transaction
                 validated = validate_transaction(payload)
                 conn.execute(
@@ -372,6 +438,58 @@ class Ledger:
                         validated.notes,
                         datetime.now().isoformat(),
                         validated.source,
+                    ),
+                )
+            elif collection == "invoices":
+                payload.pop("created_at", None)
+                conn.execute(
+                    """
+                    INSERT INTO invoices (invoice_id, customer_id, customer_name, items, subtotal, tax, discount, total, currency, status, invoice_date, due_date, notes)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("invoice_id"),
+                        payload.get("customer_id"),
+                        payload.get("customer_name"),
+                        json.dumps(payload.get("items", [])),
+                        str(payload.get("subtotal", "0")),
+                        str(payload.get("tax", "0")),
+                        str(payload.get("discount", "0")),
+                        str(payload.get("total", "0")),
+                        payload.get("currency", "XAF"),
+                        payload.get("status", "draft"),
+                        payload.get("invoice_date"),
+                        payload.get("due_date"),
+                        payload.get("notes"),
+                    ),
+                )
+            elif collection == "customers":
+                conn.execute(
+                    "INSERT INTO customers (customer_id, name, company, email, phone, address, notes) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        payload.get("customer_id"),
+                        payload.get("name"),
+                        payload.get("company"),
+                        payload.get("email"),
+                        payload.get("phone"),
+                        payload.get("address"),
+                        payload.get("notes"),
+                    ),
+                )
+            elif collection == "products":
+                conn.execute(
+                    "INSERT INTO products (product_id, name, sku, description, category, purchase_price, selling_price, unit, tax, stock_quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        payload.get("product_id"),
+                        payload.get("name"),
+                        payload.get("sku"),
+                        payload.get("description"),
+                        payload.get("category"),
+                        str(payload.get("purchase_price", "0")),
+                        str(payload.get("selling_price", "0")),
+                        payload.get("unit"),
+                        str(payload.get("tax", "0")),
+                        int(payload.get("stock_quantity", 0)),
                     ),
                 )
             conn.execute("DELETE FROM trash WHERE item_id = ?", (item_id,))

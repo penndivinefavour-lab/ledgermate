@@ -3,9 +3,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
-import sys
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -121,63 +121,6 @@ def _sanitize_llama_output(raw: str) -> str:
     return text.strip()
 
 
-def extract_transaction_json(prompt: str) -> dict[str, Any]:
-    structured_prompt = (
-        "Extract a bookkeeping transaction from the user message as JSON only. "
-        "Return keys: date (YYYY-MM-DD), description, category, type (income|expense|transfer|debt_in|debt_out), "
-        "currency (XAF|USD|EUR|GBP|NGN|GHS|KES), payment_method (cash|mobile_money|bank|credit|other), "
-        "counterparty, notes, transaction_id (slug). "
-        "Also include `items` as an array of objects with keys: description, quantity (number), unit_price (number), total (number). "
-        "If there is only one item, still return it in `items`. Do not include extra prose.\n\nUser: "
-        + prompt
-        + "\nJSON:\n"
-    )
-    raw = run_llama(structured_prompt, max_tokens=512)
-    try:
-        text = _sanitize_llama_output(raw)
-        transaction_part = _extract_json_object(text)
-        items_part = _extract_json_array(text)
-        if isinstance(transaction_part, list):
-            items_part = transaction_part
-            transaction_part = {}
-        if not isinstance(transaction_part, dict):
-            transaction_part = {}
-        if isinstance(items_part, list) and items_part:
-            transaction_part["items"] = items_part
-            computed_total = Decimal("0")
-            for item in items_part:
-                if not isinstance(item, dict):
-                    continue
-                try:
-                    amount_value = item.get("amount")
-                    total_value = item.get("total")
-                    qty = Decimal(str(item.get("quantity", 1)))
-                    unit = Decimal(str(item.get("unit_price", 0)))
-                    if amount_value is not None:
-                        total = Decimal(str(amount_value))
-                    elif total_value is not None:
-                        total = Decimal(str(total_value))
-                    else:
-                        total = qty * unit
-                    if total <= 0:
-                        # Fallback: extract first numeric-looking value from description/notes.
-                        import re
-                        text = " ".join(str(v) for v in item.values() if v is not None)
-                        m = re.search(r"(\\d[\\d,]*\\.?\\d*)", text.replace(",", ""))
-                        if m:
-                            total = Decimal(m.group(1))
-                        else:
-                            continue
-                    computed_total += total
-                except Exception:
-                    continue
-            if computed_total > 0:
-                transaction_part["amount"] = int(computed_total)
-        return transaction_part
-    except Exception:
-        return {"raw": raw}
-
-
 def _extract_json_object(text: str) -> dict[str, Any]:
     start = text.find("{")
     if start == -1:
@@ -214,3 +157,61 @@ def _extract_json_array(text: str) -> list[dict[str, Any]]:
                 except Exception:
                     return []
     return []
+
+
+def extract_transaction_json(prompt: str) -> dict[str, Any]:
+    """Extract a transaction from natural language using LLM.
+    
+    Returns a dict with transaction fields. The backend should validate and
+    compute amounts deterministically from items if the model output is ambiguous.
+    """
+    structured_prompt = (
+        "Extract a bookkeeping transaction from the user message as JSON only. "
+        "Return keys: date (YYYY-MM-DD), description, category, type (income|expense|transfer|debt_in|debt_out), "
+        "currency (XAF|USD|EUR|GBP|NGN|GHS|KES), payment_method (cash|mobile_money|bank|credit|other), "
+        "counterparty, notes, transaction_id (slug). "
+        "Also include `items` as an array of objects with keys: description, quantity (number), unit_price (number), total (number). "
+        "If there is only one item, still return it in `items`. Do not include extra prose.\n\nUser: "
+        + prompt
+        + "\nJSON:\n"
+    )
+    raw = run_llama(structured_prompt, max_tokens=512)
+    text = _sanitize_llama_output(raw)
+    transaction_part = _extract_json_object(text)
+    items_part = _extract_json_array(text)
+    if isinstance(transaction_part, list):
+        items_part = transaction_part
+        transaction_part = {}
+    if not isinstance(transaction_part, dict):
+        transaction_part = {}
+    if isinstance(items_part, list) and items_part:
+        transaction_part["items"] = items_part
+        computed_total = Decimal("0")
+        for item in items_part:
+            if not isinstance(item, dict):
+                continue
+            try:
+                amount_value = item.get("amount")
+                total_value = item.get("total")
+                qty = Decimal(str(item.get("quantity", 1)))
+                unit = Decimal(str(item.get("unit_price", 0)))
+                if amount_value is not None:
+                    total = Decimal(str(amount_value))
+                elif total_value is not None:
+                    total = Decimal(str(total_value))
+                else:
+                    total = qty * unit
+                if total <= 0:
+                    # Fallback: extract number from description field
+                    desc = str(item.get("description", ""))
+                    m = re.search(r"(\d[\d,]*\.?\d*)", desc.replace(",", ""))
+                    if m:
+                        total = Decimal(m.group(1))
+                    else:
+                        continue
+                computed_total += total
+            except Exception:
+                continue
+        if computed_total > 0:
+            transaction_part["amount"] = int(computed_total)
+    return transaction_part
