@@ -73,7 +73,7 @@ bash download_model.sh
 pip install -r requirements.txt
 
 # 3. Run the CLI
-python src/cli.py
+py src/ledgermate/cli.py
 ```
 
 ## Model license

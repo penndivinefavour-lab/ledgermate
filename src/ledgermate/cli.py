@@ -11,7 +11,12 @@ from rich import print
 from rich.panel import Panel
 from rich.prompt import Prompt
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from ledgermate.ledger import Ledger
+
 from ledgermate.llm import extract_transaction_json
 from ledgermate.validation import validate_transaction
 
