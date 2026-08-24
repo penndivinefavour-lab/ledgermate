@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -11,23 +12,40 @@ from typing import Any
 MODEL_PATH = Path(__file__).resolve().parents[2] / "model" / "llama-3.2-1b-instruct-q4_k_m.gguf"
 
 
+def _validate_llama_executable(path: str) -> str:
+    """Validate that path is an actual llama-cli/llama-server executable."""
+    p = Path(path)
+    if not p.exists():
+        raise RuntimeError(f"llama.cpp executable not found: {path}")
+    if p.is_dir():
+        raise RuntimeError(f"llama.cpp path is a directory: {path}")
+    name = p.name.lower()
+    if name not in {"llama-cli.exe", "llama-server.exe", "llama-cli", "llama-server"}:
+        raise RuntimeError(
+            f"Invalid llama.cpp executable: {path}. "
+            "Expected llama-cli.exe or llama-server.exe."
+        )
+    return str(p.resolve())
+
+
 def _find_llama_executable() -> str:
+    """Find llama-cli or llama-server on Windows/Linux."""
+    env_path = os.environ.get("LLAMA_CLI_PATH")
+    if env_path:
+        return _validate_llama_executable(env_path)
     candidates = [
         "llama-cli",
+        "llama-cli.exe",
         "llama-server",
-        "main",
-        str(Path(__file__).resolve().parents[2] / "bin" / "llama-cli.exe"),
-        str(Path(__file__).resolve().parents[2] / "bin" / "main.exe"),
+        "llama-server.exe",
     ]
     for name in candidates:
-        path = subprocess.run(
-            ["where", name] if os.name == "nt" else ["which", name],
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
+        path = shutil.which(name)
         if path:
-            return path.splitlines()[0]
-    raise FileNotFoundError("llama.cpp executable not found on PATH.")
+            return _validate_llama_executable(path)
+    raise RuntimeError(
+        "llama.cpp executable not found. Set LLAMA_CLI_PATH to the full path of llama-cli.exe."
+    )
 
 
 def run_llama(prompt: str, *, n_ctx: int = 1024, threads: int = 4, temperature: float = 0.0, max_tokens: int = 256) -> str:

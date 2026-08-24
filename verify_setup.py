@@ -64,6 +64,7 @@ tests = [
     ("test_v2_baseline.py", "Results: 9/9 passed"),
     ("test_voice_flow.py", "Results: 5/5 passed"),
     ("test_financial_accuracy.py", "Results: 9/9 passed"),
+    ("test_llama_discovery.py", "Results: 5/5 passed"),
 ]
 for tname, expected in tests:
     try:
