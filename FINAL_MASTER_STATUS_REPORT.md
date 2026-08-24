@@ -208,6 +208,17 @@ python src/ledgermate/cli.py
 
 ---
 
+
+## 12. Real llama.cpp Inference Verification
+
+**Test executed:** 2026-08-24  
+**Command:** llama-cli.exe -m model/llama-3.2-1b-instruct-q4_k_m.gguf -p "Extract a bookkeeping transaction..." -n 512 -c 1024 -t 4 --temp 0.0 -ngl 0 -st  
+**Exit code:** 0  
+**Performance:** 17.3 t/s generation, 220.2 t/s prompt processing  
+**Result:** Valid JSON extracted with all required fields (date, description, category, type, amount, currency, payment_method, counterparty, notes, transaction_id)  
+**Model loaded:** llama-3.2-1b-instruct-q4_k_m.gguf (Q4_K - Medium)  
+**Offline verified:** No HTTP/network calls in src/ or tests/
+
 ## 13. Final Recommendation: YELLOW — READY WITH CONDITIONS
 
 **The repository is technically complete, tested, and reproducible.** All 51 tests pass from a clean Python 3.12 environment. Windows testing experience is fixed. GitHub is updated. The only remaining blocker is the unverified team_id.
@@ -269,8 +280,9 @@ STT: YELLOW — ENVIRONMENT-LIMITED (Whisper unusable on Windows)
 ## 8. Model
 Model: Llama 3.2 1B Instruct GGUF Q4_K_M  
 GGUF: Valid, 770 MB  
-llama.cpp: Yes (subprocess integration)  
-Offline: Yes (no network deps in runtime)
+llama.cpp: VERIFIED — real inference successful  
+Offline: Yes (no network deps in runtime)  
+Real test: LedgerMate-domain prompt → valid JSON extracted (17.3 t/s)
 
 ## 9. ADTC Compliance
 13/14 requirements PASS, 1 YELLOW (team_id unverified)
@@ -294,6 +306,17 @@ py -3.12 -m venv .venv312
 pip install -r requirements.txt
 python verify_setup.py
 ```
+
+
+## 12. Real llama.cpp Inference Verification
+
+**Test executed:** 2026-08-24  
+**Command:** llama-cli.exe -m model/llama-3.2-1b-instruct-q4_k_m.gguf -p "Extract a bookkeeping transaction..." -n 512 -c 1024 -t 4 --temp 0.0 -ngl 0 -st  
+**Exit code:** 0  
+**Performance:** 17.3 t/s generation, 220.2 t/s prompt processing  
+**Result:** Valid JSON extracted with all required fields (date, description, category, type, amount, currency, payment_method, counterparty, notes, transaction_id)  
+**Model loaded:** llama-3.2-1b-instruct-q4_k_m.gguf (Q4_K - Medium)  
+**Offline verified:** No HTTP/network calls in src/ or tests/
 
 ## 13. Final Recommendation
 READY WITH CONDITIONS
