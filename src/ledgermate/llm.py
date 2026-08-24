@@ -81,7 +81,36 @@ def run_llama(prompt: str, *, n_ctx: int = 1024, threads: int = 4, temperature: 
         result = subprocess.run(cmd, capture_output=True, text=True, check=True, stdin=subprocess.PIPE)
     except subprocess.CalledProcessError as exc:
         raise RuntimeError(f"llama.cpp failed: {exc.stderr}") from exc
-    return result.stdout.strip()
+    return _sanitize_llama_output(result.stdout)
+
+
+def _sanitize_llama_output(raw: str) -> str:
+    """Remove llama.cpp runtime metadata from user-facing output."""
+    lines = raw.splitlines()
+    kept: list[str] = []
+    skip_prefixes = (
+        "build",
+        "model",
+        "ftype",
+        "modalities",
+        "available commands:",
+        "> ",
+        "[ Prompt:",
+        "[ Generation:",
+        "Exiting...",
+    )
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith(skip_prefixes):
+            continue
+        if stripped.startswith("llama.cpp"):
+            continue
+        kept.append(line)
+    text = "\n".join(kept).strip()
+    # Remove markdown code fences when model adds them around JSON/answer blocks
+    if text.startswith("```"):
+        text = text.lstrip("`")
+    return text.strip()
 
 
 def extract_transaction_json(prompt: str) -> dict[str, Any]:

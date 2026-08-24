@@ -54,7 +54,7 @@
     }
     .nav-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
     .nav-btn.active { background: rgba(16,185,129,0.18); color: #fff; }
-    .nav-btn .ico { width: 20px; text-align: center; font-size: 15px; }
+    .nav-btn .ico { width: 20px; text-align: center; font-weight: 700; font-size: 13px; }
 
     .offline-pill {
       margin-top: auto; padding: 10px 12px; border-radius: 10px;
@@ -155,498 +155,669 @@
       .grid-2, .grid-3 { grid-template-columns: 1fr; }
     }
   </style>
-  </head>
-  <body>
-    <div class="app">
-      <aside class="sidebar" id="sidebar">
-        <div class="brand">
-          <h1>LedgerMate</h1>
-          <p>Offline Business Intelligence</p>
-        </div>
-        <nav class="nav">
-          <button class="nav-btn active" data-page="dashboard"><span class="ico">📊</span>Dashboard</button>
-          <button class="nav-btn" data-page="transactions"><span class="ico">💳</span>Transactions</button>
-          <button class="nav-btn" data-page="reports"><span class="ico">📑</span>Reports</button>
-          <button class="nav-btn" data-page="assistant"><span class="ico">🤖</span>AI Assistant</button>
-          <button class="nav-btn" data-page="exports"><span class="ico">📤</span>Exports</button>
-          <button class="nav-btn" data-page="settings"><span class="ico">⚙️</span>Settings</button>
-        </nav>
-        <div class="offline-pill"><span class="dot"></span>Local AI • No Internet Required</div>
-      </aside>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <h1>LedgerMate</h1>
+        <p>Offline Business Intelligence</p>
+      </div>
+      <nav class="nav">
+        <button class="nav-btn active" data-page="dashboard"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>Dashboard</button>
+        <button class="nav-btn" data-page="transactions"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M2 12l4-4"/><path d="M2 12l4 4"/><path d="M22 12l-4-4"/><path d="M22 12l-4 4"/></svg></span>Transactions</button>
+        <button class="nav-btn" data-page="invoices"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>Invoices</button>
+        <button class="nav-btn" data-page="customers"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Customers</button>
+        <button class="nav-btn" data-page="products"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>Products</button>
+        <button class="nav-btn" data-page="reports"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Reports</button>
+        <button class="nav-btn" data-page="assistant"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg></span>AI Assistant</button>
+        <button class="nav-btn" data-page="exports"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>Exports</button>
+        <button class="nav-btn" data-page="trash"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>Trash</button>
+        <button class="nav-btn" data-page="settings"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Settings</button>
+      </nav>
+      <div class="offline-pill"><span class="dot"></span>Local AI • No Internet Required</div>
+    </aside>
 
-      <div class="main">
-        <div class="topbar">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <button class="mobile-toggle" id="menu-toggle">☰</button>
-            <div>
-              <h2 id="page-title">Dashboard</h2>
-              <div class="meta" id="page-meta">This month</div>
-            </div>
-          </div>
-          <div class="topbar-actions">
-            <select id="period" class="select">
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month" selected>This Month</option>
-              <option value="year">This Year</option>
-              <option value="all">All Time</option>
-            </select>
-            <button class="btn btn-secondary" onclick="refresh()">Refresh</button>
+    <div class="main">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="mobile-toggle" id="menu-toggle">☰</button>
+          <div>
+            <h2 id="page-title">Dashboard</h2>
+            <div class="meta" id="page-meta">This month</div>
           </div>
         </div>
+        <div class="topbar-actions">
+          <select id="period" class="select">
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month" selected>This Month</option>
+            <option value="year">This Year</option>
+            <option value="all">All Time</option>
+          </select>
+          <button class="btn btn-secondary" onclick="refresh()">Refresh</button>
+        </div>
+      </div>
 
-        <div class="content">
-          <!-- Dashboard -->
-          <div id="page-dashboard" class="page active">
-            <div class="grid grid-4">
-              <div class="card kpi">
-                <div class="label">Income</div>
-                <div class="value" id="kpi-income" style="color:#059669;">0 XAF</div>
-                <div class="sub" id="kpi-income-sub">No income yet</div>
-              </div>
-              <div class="card kpi">
-                <div class="label">Expenses</div>
-                <div class="value" id="kpi-expenses" style="color:#dc2626;">0 XAF</div>
-                <div class="sub" id="kpi-expenses-sub">No expenses yet</div>
-              </div>
-              <div class="card kpi">
-                <div class="label">Net Profit</div>
-                <div class="value" id="kpi-profit">0 XAF</div>
-                <div class="sub" id="kpi-profit-sub">Income minus expenses</div>
-              </div>
-              <div class="card kpi">
-                <div class="label">Cash Position</div>
-                <div class="value" id="kpi-cash">0 XAF</div>
-                <div class="sub" id="kpi-cash-sub">Available cash</div>
-              </div>
+      <div class="content">
+        <!-- Dashboard -->
+        <div id="page-dashboard" class="page active">
+          <div class="grid grid-4">
+            <div class="card kpi">
+              <div class="label">Income</div>
+              <div class="value" id="kpi-income" style="color:#059669;">0 XAF</div>
+              <div class="sub" id="kpi-income-sub">No income yet</div>
             </div>
-
-            <div class="grid grid-3 section">
-              <div class="card">
-                <h3>Business Health</h3>
-                <div id="business-health">
-                  <div class="empty">Add transactions to see insights.</div>
-                </div>
-              </div>
-              <div class="card">
-                <h3>Top Expense Categories</h3>
-                <div id="top-expenses">
-                  <div class="empty">No expense data available.</div>
-                </div>
-              </div>
-              <div class="card">
-                <h3>Smart Insight</h3>
-                <div id="ai-insight">
-                  <div class="empty">Keep recording transactions for insights.</div>
-                </div>
-              </div>
+            <div class="card kpi">
+              <div class="label">Expenses</div>
+              <div class="value" id="kpi-expenses" style="color:#dc2626;">0 XAF</div>
+              <div class="sub" id="kpi-expenses-sub">No expenses yet</div>
             </div>
-
-            <div class="section">
-              <div class="card">
-                <h3>Recent Transactions</h3>
-                <div id="recent-transactions">
-                  <div class="empty">No transactions yet. Add your first transaction to get started.</div>
-                </div>
-              </div>
+            <div class="card kpi">
+              <div class="label">Net Profit</div>
+              <div class="value" id="kpi-profit">0 XAF</div>
+              <div class="sub" id="kpi-profit-sub">Income minus expenses</div>
+            </div>
+            <div class="card kpi">
+              <div class="label">Cash Position</div>
+              <div class="value" id="kpi-cash">0 XAF</div>
+              <div class="sub" id="kpi-cash-sub">Available cash</div>
             </div>
           </div>
 
-          <!-- Transactions -->
-          <div id="page-transactions" class="page">
+          <div class="grid grid-3 section">
             <div class="card">
-              <h3>Add Transaction</h3>
-              <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Describe what happened in plain language.</p>
+              <h3>Business Health</h3>
+              <div id="business-health"><div class="empty">Add transactions to see insights.</div></div>
+            </div>
+            <div class="card">
+              <h3>Top Expense Categories</h3>
+              <div id="top-expenses"><div class="empty">No expense data available.</div></div>
+            </div>
+            <div class="card">
+              <h3>Smart Insight</h3>
+              <div id="ai-insight"><div class="empty">Keep recording transactions for insights.</div></div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="card">
+              <h3>Recent Transactions</h3>
+              <div id="recent-transactions"><div class="empty">No transactions yet. Add your first transaction to get started.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transactions -->
+        <div id="page-transactions" class="page">
+          <div class="card">
+            <h3>Add Transaction</h3>
+            <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Describe what happened in plain language.</p>
+            <div style="display:flex;gap:10px;">
+              <input id="nl-input" class="input" placeholder='Example: "I bought fish for 3000 XAF and tomato for 500"' />
+              <button class="btn btn-primary" onclick="addTransactionNL()">Add</button>
+            </div>
+            <div id="nl-result" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="card section">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <h3>All Transactions</h3>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-secondary btn-sm" onclick="exportCSV()">Export CSV</button>
+                <button class="btn btn-secondary btn-sm" onclick="exportJSON()">Export JSON</button>
+              </div>
+            </div>
+            <div id="all-transactions"><div class="empty">No transactions yet</div></div>
+          </div>
+        </div>
+
+        <!-- Invoices -->
+        <div id="page-invoices" class="page">
+          <div class="card">
+            <h3>Invoices</h3>
+            <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Create and manage invoices locally.</p>
+            <button class="btn btn-primary" onclick="createInvoice()">New Invoice</button>
+            <div id="invoice-result" style="margin-top:10px;"></div>
+          </div>
+          <div class="card section">
+            <h3>Invoice List</h3>
+            <div id="invoice-list"><div class="empty">No invoices yet.</div></div>
+          </div>
+        </div>
+
+        <!-- Customers -->
+        <div id="page-customers" class="page">
+          <div class="card">
+            <h3>Customers</h3>
+            <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Local customer directory for invoicing.</p>
+            <button class="btn btn-primary" onclick="addCustomer()">Add Customer</button>
+            <div id="customer-result" style="margin-top:10px;"></div>
+          </div>
+          <div class="card section">
+            <h3>Customer List</h3>
+            <div id="customer-list"><div class="empty">No customers yet.</div></div>
+          </div>
+        </div>
+
+        <!-- Products -->
+        <div id="page-products" class="page">
+          <div class="card">
+            <h3>Products & Services</h3>
+            <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Catalog for faster invoice creation.</p>
+            <button class="btn btn-primary" onclick="addProduct()">Add Product</button>
+            <div id="product-result" style="margin-top:10px;"></div>
+          </div>
+          <div class="card section">
+            <h3>Product List</h3>
+            <div id="product-list"><div class="empty">No products yet.</div></div>
+          </div>
+        </div>
+
+        <!-- Reports -->
+        <div id="page-reports" class="page">
+          <div class="grid grid-2">
+            <div class="card">
+              <h3>Financial Summary</h3>
+              <div id="report-financial"><div class="empty">No data yet.</div></div>
+            </div>
+            <div class="card">
+              <h3>Expense Breakdown</h3>
+              <div id="report-expenses"><div class="empty">No expense data yet.</div></div>
+            </div>
+          </div>
+          <div class="card section">
+            <h3>Business Summary</h3>
+            <div id="report-summary"><div class="empty">Not enough data for a summary.</div></div>
+          </div>
+        </div>
+
+        <!-- AI Assistant -->
+        <div id="page-assistant" class="page">
+          <div class="card" style="height:calc(100vh - 110px);display:flex;flex-direction:column;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <h3>LedgerMate AI</h3>
+              <button class="btn btn-secondary btn-sm" onclick="clearChat()">Clear</button>
+            </div>
+            <div class="chat-history" id="chat-history">
+              <div class="bubble assistant">
+                <div>Hello! I'm your offline business assistant. Ask me about your business, expenses, profit, or anything finance-related.</div>
+                <div class="meta">LedgerMate • just now</div>
+              </div>
+            </div>
+            <div class="chips" id="quick-chips">
+              <button class="chip" onclick="quickAsk('How is my business doing?')">How is my business doing?</button>
+              <button class="chip" onclick="quickAsk('What are my biggest expenses?')">Biggest expenses</button>
+              <button class="chip" onclick="quickAsk('Am I profitable?')">Am I profitable?</button>
+              <button class="chip" onclick="quickAsk('Give me a summary')">Give me a summary</button>
+            </div>
+            <div class="composer">
+              <input id="assistant-input" class="input" placeholder="Ask LedgerMate about your business..." />
+              <button class="btn btn-primary" onclick="askAssistant()">Send</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exports -->
+        <div id="page-exports" class="page">
+          <div class="grid grid-2">
+            <div class="card">
+              <h3>Export Transactions</h3>
+              <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Download your transaction history.</p>
               <div style="display:flex;gap:10px;">
-                <input id="nl-input" class="input" placeholder='Example: "I bought fish for 3000 XAF and tomato for 500"' />
-                <button class="btn btn-primary" onclick="addTransactionNL()">Add</button>
+                <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+                <button class="btn btn-secondary" onclick="exportJSON()">Export JSON</button>
               </div>
-              <div id="nl-result" style="margin-top:10px;"></div>
             </div>
-
-            <div class="card section">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                <h3>All Transactions</h3>
-                <div style="display:flex;gap:8px;">
-                  <button class="btn btn-secondary btn-sm" onclick="exportCSV()">Export CSV</button>
-                  <button class="btn btn-secondary btn-sm" onclick="exportJSON()">Export JSON</button>
-                </div>
-              </div>
-              <div id="all-transactions">
-                <div class="empty">No transactions yet</div>
-              </div>
+            <div class="card">
+              <h3>Reports</h3>
+              <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Generate business summaries from actual data.</p>
+              <button class="btn btn-secondary" onclick="refreshReports()">Refresh Reports</button>
             </div>
           </div>
+          <div class="card section">
+            <h3>Privacy</h3>
+            <p style="color:#475569;font-size:14px;">LedgerMate is designed to operate offline. Your financial data stays on this device. Exports are generated locally.</p>
+          </div>
+        </div>
 
-          <!-- Reports -->
-          <div id="page-reports" class="page">
-            <div class="grid grid-2">
-              <div class="card">
-                <h3>Financial Summary</h3>
-                <div id="report-financial">
-                  <div class="empty">No data yet.</div>
+        <!-- Trash -->
+        <div id="page-trash" class="page">
+          <div class="card">
+            <h3>Trash</h3>
+            <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Recover deleted transactions or permanently remove them.</p>
+            <div id="trash-list"><div class="empty">Trash is empty.</div></div>
+          </div>
+        </div>
+
+        <!-- Settings -->
+        <div id="page-settings" class="page">
+          <div class="grid grid-2">
+            <div class="card">
+              <h3>Business</h3>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+                <div>
+                  <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Business Name</label>
+                  <input id="setting-business-name" class="input" placeholder="My Business" />
                 </div>
-              </div>
-              <div class="card">
-                <h3>Expense Breakdown</h3>
-                <div id="report-expenses">
-                  <div class="empty">No expense data yet.</div>
+                <div>
+                  <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Currency</label>
+                  <input id="setting-currency" class="input" value="XAF" />
+                </div>
+                <div>
+                  <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Language</label>
+                  <select id="setting-language" class="select">
+                    <option value="en">English</option>
+                    <option value="fr">French</option>
+                    <option value="es">Spanish</option>
+                    <option value="pt">Portuguese</option>
+                    <option value="ar">Arabic</option>
+                    <option value="sw">Swahili</option>
+                    <option value="ha">Hausa</option>
+                  </select>
                 </div>
               </div>
             </div>
-            <div class="card section">
-              <h3>Business Summary</h3>
-              <div id="report-summary">
-                <div class="empty">Not enough data for a summary.</div>
-              </div>
+            <div class="card">
+              <h3>AI Model</h3>
+              <div id="model-status" style="margin-top:8px;color:#475569;font-size:14px;">Detecting local model...</div>
             </div>
           </div>
-
-          <!-- AI Assistant -->
-          <div id="page-assistant" class="page">
-            <div class="card" style="height:calc(100vh - 110px);display:flex;flex-direction:column;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <h3>LedgerMate AI</h3>
-                <button class="btn btn-secondary btn-sm" onclick="clearChat()">Clear</button>
-              </div>
-              <div class="chat-history" id="chat-history">
-                <div class="bubble assistant">
-                  <div>Hello! I'm your offline business assistant. Ask me about your business, expenses, profit, or anything finance-related.</div>
-                  <div class="meta">LedgerMate • just now</div>
-                </div>
-              </div>
-              <div class="chips" id="quick-chips">
-                <button class="chip" onclick="quickAsk('How is my business doing?')">How is my business doing?</button>
-                <button class="chip" onclick="quickAsk('What are my biggest expenses?')">Biggest expenses</button>
-                <button class="chip" onclick="quickAsk('Am I profitable?')">Am I profitable?</button>
-                <button class="chip" onclick="quickAsk('Give me a summary')">Give me a summary</button>
-              </div>
-              <div class="composer">
-                <input id="assistant-input" class="input" placeholder="Ask LedgerMate about your business..." />
-                <button class="btn btn-primary" onclick="askAssistant()">Send</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Exports -->
-          <div id="page-exports" class="page">
-            <div class="grid grid-2">
-              <div class="card">
-                <h3>Export Transactions</h3>
-                <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Download your transaction history.</p>
-                <div style="display:flex;gap:10px;">
-                  <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
-                  <button class="btn btn-secondary" onclick="exportJSON()">Export JSON</button>
-                </div>
-              </div>
-              <div class="card">
-                <h3>Reports</h3>
-                <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Generate business summaries from actual data.</p>
-                <button class="btn btn-secondary" onclick="refreshReports()">Refresh Reports</button>
-              </div>
-            </div>
-            <div class="card section">
-              <h3>Privacy</h3>
-              <p style="color:#475569;font-size:14px;">LedgerMate is designed to operate offline. Your financial data stays on this device. Exports are generated locally.</p>
-            </div>
-          </div>
-
-          <!-- Settings -->
-          <div id="page-settings" class="page">
-            <div class="grid grid-2">
-              <div class="card">
-                <h3>Business</h3>
-                <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
-                  <div>
-                    <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Business Name</label>
-                    <input id="setting-business-name" class="input" placeholder="My Business" />
-                  </div>
-                  <div>
-                    <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Currency</label>
-                    <input id="setting-currency" class="input" value="XAF" />
-                  </div>
-                </div>
-              </div>
-              <div class="card">
-                <h3>AI Model</h3>
-                <div id="model-status" style="margin-top:8px;color:#475569;font-size:14px;">Detecting local model...</div>
-              </div>
-            </div>
-            <div class="card section">
-              <h3>Privacy</h3>
-              <p style="color:#475569;font-size:14px;">LedgerMate runs fully offline. No telemetry. No cloud AI. No remote analytics. Financial data never leaves this device during normal operation.</p>
-            </div>
+          <div class="card section">
+            <h3>Privacy</h3>
+            <p style="color:#475569;font-size:14px;">LedgerMate runs fully offline. No telemetry. No cloud AI. No remote analytics. Financial data never leaves this device during normal operation.</p>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
-    <script>
-      const API_BASE = '/api';
-      let currentPage = 'dashboard';
-      let transactions = [];
-      let dashboardData = null;
+  <script>
+    const API_BASE = '/api';
+    let currentPage = 'dashboard';
+    let transactions = [];
+    let dashboardData = null;
 
-      function toast(msg) {
-        const el = document.getElementById('toast');
-        el.textContent = msg;
-        el.classList.add('show');
-        setTimeout(() => el.classList.remove('show'), 2400);
-      }
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2400);
+    }
 
-      function showPage(page) {
-        currentPage = page;
-        document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.remove('active'));
-        document.getElementById('page-' + page)?.classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === page));
-        const titles = { dashboard: 'Dashboard', transactions: 'Transactions', reports: 'Reports', assistant: 'AI Assistant', exports: 'Exports', settings: 'Settings' };
-        document.getElementById('page-title').textContent = titles[page] || page;
-        if (page === 'reports') refreshReports();
-      }
+    function showPage(page) {
+      currentPage = page;
+      document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.remove('active'));
+      document.getElementById('page-' + page)?.classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === page));
+      const titles = {
+        dashboard: 'Dashboard', transactions: 'Transactions', invoices: 'Invoices',
+        customers: 'Customers', products: 'Products', reports: 'Reports',
+        assistant: 'AI Assistant', exports: 'Exports', trash: 'Trash', settings: 'Settings'
+      };
+      document.getElementById('page-title').textContent = titles[page] || page;
+      if (page === 'reports') refreshReports();
+    }
 
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
-      document.getElementById('menu-toggle')?.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
+    document.getElementById('menu-toggle')?.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
 
-      document.getElementById('period').addEventListener('change', () => {
-        const labels = { today: 'Today', week: 'This Week', month: 'This Month', year: 'This Year', all: 'All Time' };
-        document.getElementById('page-meta').textContent = labels[document.getElementById('period').value] || '';
-        refresh();
-      });
-
-      async function api(url, options = {}) {
-        const res = await fetch(url, options);
-        if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
-        return res.status === 204 ? null : res.json();
-      }
-
-      function fmt(n) {
-        const num = parseFloat(n || '0');
-        if (Number.isNaN(num)) return '0 XAF';
-        return `${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} XAF`;
-      }
-
-      function fmtDate(d) {
-        if (!d) return '';
-        const dt = new Date(d + 'T00:00:00');
-        return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      }
-
-      function timeAgo() {
-        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      }
-
-      async function refresh() {
-        try {
-          const [dash, txns, cats] = await Promise.all([
-            api(`${API_BASE}/dashboard?period=${document.getElementById('period').value}`),
-            api(`${API_BASE}/transactions`),
-            api(`${API_BASE}/analytics/categories?period=${document.getElementById('period').value}`),
-          ]);
-          dashboardData = dash;
-          transactions = txns || [];
-          renderDashboard(dash, txns, cats);
-          renderTransactions();
-          renderReports(dash, txns, cats);
-        } catch (err) {
-          console.error('Refresh failed', err);
-          toast('Refresh failed');
-        }
-      }
-
-      function renderDashboard(dash, txns, cats) {
-        if (!dash) return;
-        document.getElementById('kpi-income').textContent = fmt(dash.income);
-        document.getElementById('kpi-expenses').textContent = fmt(dash.expenses);
-        const profit = parseFloat(dash.profit || '0');
-        const profitEl = document.getElementById('kpi-profit');
-        profitEl.textContent = fmt(dash.profit);
-        profitEl.style.color = profit > 0 ? '#059669' : profit < 0 ? '#dc2626' : '#0f172a';
-        document.getElementById('kpi-cash').textContent = fmt(dash.cash);
-
-        document.getElementById('kpi-income-sub').textContent = dash.income_count ? `${dash.income_count} income transaction${dash.income_count === 1 ? '' : 's'}` : 'No income yet';
-        document.getElementById('kpi-expenses-sub').textContent = dash.expense_count ? `${dash.expense_count} expense transaction${dash.expense_count === 1 ? '' : 's'}` : 'No expenses yet';
-
-        const health = computeHealth(dash);
-        document.getElementById('business-health').innerHTML = health;
-
-        const topExpenses = Object.entries(cats?.expense_by_category || {}).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1])).slice(0, 5);
-        document.getElementById('top-expenses').innerHTML = topExpenses.length ? topExpenses.map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:14px;color:#475569;">${k}</span><span style="font-weight:700;color:#dc2626;">${fmt(v)}</span></div>`).join('') : '<div class="empty">No expense data available.</div>';
-
-        const insight = computeInsight(dash, txns || []);
-        document.getElementById('ai-insight').innerHTML = insight;
-
-        const recent = (txns || []).slice(0, 8);
-        document.getElementById('recent-transactions').innerHTML = recent.length ? `<div class="table-wrap"><table>
-          <thead><tr><th>Date</th><th>Description</th><th>Category</th><th style="text-align:right;">Amount</th></tr></thead>
-          <tbody>${recent.map(t => `<tr>
-            <td>${fmtDate(t.date)}</td>
-            <td>${escapeHtml(t.description)}</td>
-            <td><span class="badge" style="background:#f1f5f9;color:#475569;">${escapeHtml(t.category)}</span></td>
-            <td style="text-align:right;font-weight:700;color:${t.type === 'income' ? '#059669' : '#dc2626'};">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</td>
-          </tr>`).join('')}</tbody>
-        </table></div>` : '<div class="empty">No transactions yet. Add your first transaction to get started.</div>';
-      }
-
-      function renderTransactions() {
-        const container = document.getElementById('all-transactions');
-        if (!transactions.length) { container.innerHTML = '<div class="empty">No transactions yet</div>'; return; }
-        container.innerHTML = `<div class="table-wrap"><table>
-          <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th style="text-align:right;">Amount</th></tr></thead>
-          <tbody>${transactions.map(t => `<tr>
-            <td>${fmtDate(t.date)}</td>
-            <td>${escapeHtml(t.description)}</td>
-            <td><span class="badge" style="background:#f1f5f9;color:#475569;">${escapeHtml(t.category)}</span></td>
-            <td><span class="badge ${t.type === 'income' ? 'badge-income' : 'badge-expense'}">${t.type}</span></td>
-            <td style="text-align:right;font-weight:700;color:${t.type === 'income' ? '#059669' : '#dc2626'};">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</td>
-          </tr>`).join('')}</tbody>
-        </table></div>`;
-      }
-
-      function renderReports(dash, txns, cats) {
-        const expenseEntries = Object.entries(cats?.expense_by_category || {}).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
-        const incomeEntries = Object.entries(cats?.income_by_category || {}).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
-        document.getElementById('report-financial').innerHTML = dash ? `
-          <div style="display:grid;gap:8px;">
-            <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Income</span><span style="font-weight:700;color:#059669;">${fmt(dash.income)}</span></div>
-            <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Expenses</span><span style="font-weight:700;color:#dc2626;">${fmt(dash.expenses)}</span></div>
-            <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Net</span><span style="font-weight:700;">${fmt(dash.profit)}</span></div>
-            <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Transactions</span><span style="font-weight:700;">${dash.transaction_count}</span></div>
-          </div>` : '<div class="empty">No data yet.</div>';
-
-        document.getElementById('report-expenses').innerHTML = expenseEntries.length ? expenseEntries.map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;"><span>${k}</span><span style="font-weight:700;color:#dc2626;">${fmt(v)}</span></div>`).join('') : '<div class="empty">No expense data yet.</div>';
-
-        const rows = txns || [];
-        const income = rows.filter(r => r.type === 'income').reduce((s, r) => s + parseFloat(r.amount || '0'), 0);
-        const expense = rows.filter(r => r.type === 'expense').reduce((s, r) => s + parseFloat(r.amount || '0'), 0);
-        document.getElementById('report-summary').innerHTML = rows.length ? `
-          <p><strong>Overall:</strong> Your business is currently ${income >= expense ? 'profitable' : 'running at a loss'}.</p>
-          <p style="margin-top:8px;"><strong>Money coming in:</strong> ${fmt(income)}</p>
-          <p><strong>Money going out:</strong> ${fmt(expense)}</p>
-          <p><strong>Profit:</strong> ${fmt(income - expense)}</p>
-          <p style="margin-top:8px;color:#64748b;">Keep tracking for better insights.</p>` : '<div class="empty">Not enough data for a summary.</div>';
-      }
-
-      function computeHealth(dash) {
-        if (!dash || !dash.transaction_count) return '<div class="empty">Add transactions to see business health.</div>';
-        const expense = parseFloat(dash.expenses || '0');
-        const income = parseFloat(dash.income || '0');
-        const profit = income - expense;
-        let status = 'Stable', color = '#f59e0b', reason = 'Revenue covers expenses.';
-        if (dash.transaction_count < 3) { status = 'Getting started'; color = '#64748b'; reason = 'Keep recording transactions.'; }
-        else if (profit > 0 && income > 0) { status = 'Strong'; color = '#10b981'; reason = 'Revenue exceeds expenses.'; }
-        else if (profit < 0) { status = 'Needs attention'; color = '#ef4444'; reason = 'Expenses exceed income.'; }
-        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="width:10px;height:10px;border-radius:50%;background:${color};"></span><span style="font-weight:700;">${status}</span></div><div style="color:#64748b;font-size:13px;">${reason}</div>`;
-      }
-
-      function computeInsight(dash, txns) {
-        if (!dash || !txns.length) return '<div class="empty">Keep recording transactions for insights.</div>';
-        const top = dash.top_expense_category;
-        if (top) return `<div><strong>Top expense:</strong> ${top}</div><div style="color:#64748b;font-size:13px;margin-top:6px;">Focus on reducing spending in this category if possible.</div>`;
-        return '<div>Add more transactions to unlock insights.</div>';
-      }
-
-      function escapeHtml(s) {
-        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      }
-
-      async function addTransactionNL() {
-        const input = document.getElementById('nl-input');
-        const text = input.value.trim();
-        if (!text) return;
-        const resultDiv = document.getElementById('nl-result');
-        resultDiv.innerHTML = '<div style="color:#64748b;padding:8px 0;">Processing...</div>';
-        try {
-          const res = await api(`${API_BASE}/transactions/nl`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-          if (res.error) { resultDiv.innerHTML = `<div class="error">${escapeHtml(res.error)}</div>`; toast('Transaction failed'); }
-          else {
-            resultDiv.innerHTML = `<div class="success">Transaction recorded! <strong>${fmt(res.proposal?.amount)} ${res.proposal?.currency || 'XAF'}</strong> — ${escapeHtml(res.proposal?.description || '')}</div>`;
-            input.value = '';
-            toast('Transaction saved');
-            refresh();
-          }
-        } catch (err) {
-          resultDiv.innerHTML = `<div class="error">Failed: ${escapeHtml(err.message)}</div>`;
-          toast('Transaction failed');
-        }
-      }
-
-      async function askAssistant() {
-        const input = document.getElementById('assistant-input');
-        const q = input.value.trim();
-        if (!q) return;
-        const history = document.getElementById('chat-history');
-        history.innerHTML += `<div class="bubble user"><div>${escapeHtml(q)}<div class="meta">You • ${timeAgo()}</div></div>`;
-        input.value = '';
-        const thinking = document.createElement('div');
-        thinking.className = 'bubble assistant';
-        thinking.innerHTML = '<div style="color:#64748b;">LedgerMate is thinking...</div>';
-        history.appendChild(thinking);
-        history.scrollTop = history.scrollHeight;
-        try {
-          const res = await api(`${API_BASE}/assistant`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: q }) });
-          thinking.innerHTML = `<div>${escapeHtml(res.answer)}<div class="meta">LedgerMate • ${timeAgo()}</div></div>`;
-        } catch (err) {
-          thinking.innerHTML = `<div class="error">Sorry, I couldn't process that.</div>`;
-        }
-        history.scrollTop = history.scrollHeight;
-      }
-
-      function quickAsk(q) {
-        document.getElementById('assistant-input').value = q;
-        askAssistant();
-      }
-
-      function clearChat() {
-        const history = document.getElementById('chat-history');
-        history.innerHTML = '<div class="bubble assistant"><div>Conversation cleared. How can I help?</div><div class="meta">LedgerMate • just now</div></div>';
-      }
-
-      async function exportCSV() {
-        try {
-          const res = await fetch(`${API_BASE}/export/csv`);
-          if (!res.ok) return alert('No transactions to export');
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a'); a.href = url; a.download = 'transactions.csv'; a.click();
-          toast('CSV exported');
-        } catch { toast('Export failed'); }
-      }
-
-      async function exportJSON() {
-        try {
-          const res = await fetch(`${API_BASE}/export/json`);
-          if (!res.ok) return alert('No transactions to export');
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a'); a.href = url; a.download = 'transactions.json'; a.click();
-          toast('JSON exported');
-        } catch { toast('Export failed'); }
-      }
-
-      async function refreshReports() {
-        try {
-          const [dash, txns, cats] = await Promise.all([ api(`${API_BASE}/dashboard?period=${document.getElementById('period').value}`), api(`${API_BASE}/transactions`), api(`${API_BASE}/analytics/categories?period=${document.getElementById('period').value}`) ]);
-          renderReports(dash, txns, cats);
-        } catch { toast('Failed to refresh reports'); }
-      }
-
-      async function detectModel() {
-        try {
-          const health = await api(`${API_BASE}/health`);
-          const el = document.getElementById('model-status');
-          if (health && health.offline === 'true') { el.innerHTML = '<span style="color:#10b981;font-weight:700;">● Local AI Active</span><div style="color:#64748b;font-size:12px;margin-top:4px;">llama.cpp runtime detected</div>'; }
-          else { el.innerHTML = '<span style="color:#f59e0b;font-weight:700;">● Model Status Unknown</span>'; }
-        } catch { document.getElementById('model-status').innerHTML = 'Unable to detect model status.'; }
-      }
-
-      document.getElementById('assistant-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') askAssistant(); });
-      document.getElementById('nl-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTransactionNL(); });
-
+    document.getElementById('period').addEventListener('change', () => {
+      const labels = { today: 'Today', week: 'This Week', month: 'This Month', year: 'This Year', all: 'All Time' };
+      document.getElementById('page-meta').textContent = labels[document.getElementById('period').value] || '';
       refresh();
-      if (currentPage === 'settings') detectModel();
-      setInterval(refresh, 30000);
-    </script>
+    });
+
+    async function api(url, options = {}) {
+      const res = await fetch(url, options);
+      if (!res.ok) {
+        let friendly = 'Something went wrong. Please try again.';
+        try {
+          const body = await res.json();
+          if (body.detail) friendly = body.detail;
+        } catch (e) {}
+        throw new Error(friendly);
+      }
+      return res.status === 204 ? null : res.json();
+    }
+
+    function fmt(n) {
+      const num = parseFloat(n || '0');
+      if (Number.isNaN(num)) return '0 XAF';
+      return `${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} XAF`;
+    }
+
+    function fmtDate(d) {
+      if (!d) return '';
+      const dt = new Date(d + 'T00:00:00');
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function timeAgo() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function refresh() {
+      try {
+        const [dash, txns, cats] = await Promise.all([
+          api(`${API_BASE}/dashboard?period=${document.getElementById('period').value}`),
+          api(`${API_BASE}/transactions`),
+          api(`${API_BASE}/analytics/categories?period=${document.getElementById('period').value}`),
+        ]);
+        dashboardData = dash;
+        transactions = txns || [];
+        renderDashboard(dash, txns, cats);
+        renderTransactions();
+        renderReports(dash, txns, cats);
+      } catch (err) {
+        console.error('Refresh failed', err);
+        toast('Refresh failed');
+      }
+    }
+
+    function renderDashboard(dash, txns, cats) {
+      if (!dash) return;
+      document.getElementById('kpi-income').textContent = fmt(dash.income);
+      document.getElementById('kpi-expenses').textContent = fmt(dash.expenses);
+      const profit = parseFloat(dash.profit || '0');
+      const profitEl = document.getElementById('kpi-profit');
+      profitEl.textContent = fmt(dash.profit);
+      profitEl.style.color = profit > 0 ? '#059669' : profit < 0 ? '#dc2626' : '#0f172a';
+      document.getElementById('kpi-cash').textContent = fmt(dash.cash);
+
+      document.getElementById('kpi-income-sub').textContent = dash.income_count ? `${dash.income_count} income transaction${dash.income_count === 1 ? '' : 's'}` : 'No income yet';
+      document.getElementById('kpi-expenses-sub').textContent = dash.expense_count ? `${dash.expense_count} expense transaction${dash.expense_count === 1 ? '' : 's'}` : 'No expenses yet';
+
+      const health = computeHealth(dash);
+      document.getElementById('business-health').innerHTML = health;
+
+      const topExpenses = Object.entries(cats?.expense_by_category || {}).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1])).slice(0, 5);
+      document.getElementById('top-expenses').innerHTML = topExpenses.length ? topExpenses.map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:14px;color:#475569;">${k}</span><span style="font-weight:700;color:#dc2626;">${fmt(v)}</span></div>`).join('') : '<div class="empty">No expense data available.</div>';
+
+      const insight = computeInsight(dash, txns || []);
+      document.getElementById('ai-insight').innerHTML = insight;
+
+      const recent = (txns || []).slice(0, 8);
+      document.getElementById('recent-transactions').innerHTML = recent.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th style="text-align:right;">Amount</th></tr></thead>
+        <tbody>${recent.map(t => `<tr>
+          <td>${fmtDate(t.date)}</td>
+          <td>${escapeHtml(t.description)}</td>
+          <td><span class="badge" style="background:#f1f5f9;color:#475569;">${escapeHtml(t.category)}</span></td>
+          <td style="text-align:right;font-weight:700;color:${t.type === 'income' ? '#059669' : '#dc2626'};">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>` : '<div class="empty">No transactions yet. Add your first transaction to get started.</div>';
+    }
+
+    function renderTransactions() {
+      const container = document.getElementById('all-transactions');
+      if (!transactions.length) { container.innerHTML = '<div class="empty">No transactions yet</div>'; return; }
+      container.innerHTML = `<div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th style="text-align:right;">Amount</th></tr></thead>
+        <tbody>${transactions.map(t => `<tr>
+          <td>${fmtDate(t.date)}</td>
+          <td>${escapeHtml(t.description)}</td>
+          <td><span class="badge" style="background:#f1f5f9;color:#475569;">${escapeHtml(t.category)}</span></td>
+          <td><span class="badge ${t.type === 'income' ? 'badge-income' : 'badge-expense'}">${t.type}</span></td>
+          <td style="text-align:right;font-weight:700;color:${t.type === 'income' ? '#059669' : '#dc2626'};">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`;
+    }
+
+    function renderReports(dash, txns, cats) {
+      const expenseEntries = Object.entries(cats?.expense_by_category || {}).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
+      const incomeEntries = Object.entries(cats?.income_by_category || {}).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
+      document.getElementById('report-financial').innerHTML = dash ? `
+        <div style="display:grid;gap:8px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Income</span><span style="font-weight:700;color:#059669;">${fmt(dash.income)}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Expenses</span><span style="font-weight:700;color:#dc2626;">${fmt(dash.expenses)}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Net</span><span style="font-weight:700;">${fmt(dash.profit)}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Transactions</span><span style="font-weight:700;">${dash.transaction_count}</span></div>
+        </div>` : '<div class="empty">No data yet.</div>';
+
+      document.getElementById('report-expenses').innerHTML = expenseEntries.length ? expenseEntries.map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;"><span>${k}</span><span style="font-weight:700;color:#dc2626;">${fmt(v)}</span></div>`).join('') : '<div class="empty">No expense data yet.</div>';
+
+      const rows = txns || [];
+      const income = rows.filter(r => r.type === 'income').reduce((s, r) => s + parseFloat(r.amount || '0'), 0);
+      const expense = rows.filter(r => r.type === 'expense').reduce((s, r) => s + parseFloat(r.amount || '0'), 0);
+      document.getElementById('report-summary').innerHTML = rows.length ? `
+        <p><strong>Overall:</strong> Your business is currently ${income >= expense ? 'profitable' : 'running at a loss'}.</p>
+        <p style="margin-top:8px;"><strong>Money coming in:</strong> ${fmt(income)}</p>
+        <p><strong>Money going out:</strong> ${fmt(expense)}</p>
+        <p><strong>Profit:</strong> ${fmt(income - expense)}</p>
+        <p style="margin-top:8px;color:#64748b;">Keep tracking for better insights.</p>` : '<div class="empty">Not enough data for a summary.</div>';
+    }
+
+    function computeHealth(dash) {
+      if (!dash || !dash.transaction_count) return '<div class="empty">Add transactions to see business health.</div>';
+      const expense = parseFloat(dash.expenses || '0');
+      const income = parseFloat(dash.income || '0');
+      const profit = income - expense;
+      let status = 'Stable', color = '#f59e0b', reason = 'Revenue covers expenses.';
+      if (dash.transaction_count < 3) { status = 'Getting started'; color = '#64748b'; reason = 'Keep recording transactions.'; }
+      else if (profit > 0 && income > 0) { status = 'Strong'; color = '#10b981'; reason = 'Revenue exceeds expenses.'; }
+      else if (profit < 0) { status = 'Needs attention'; color = '#ef4444'; reason = 'Expenses exceed income.'; }
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="width:10px;height:10px;border-radius:50%;background:${color};"></span><span style="font-weight:700;">${status}</span></div><div style="color:#64748b;font-size:13px;">${reason}</div>`;
+    }
+
+    function computeInsight(dash, txns) {
+      if (!dash || !txns.length) return '<div class="empty">Keep recording transactions for insights.</div>';
+      const top = dash.top_expense_category;
+      if (top) return `<div><strong>Top expense:</strong> ${top}</div><div style="color:#64748b;font-size:13px;margin-top:6px;">Focus on reducing spending in this category if possible.</div>`;
+      return '<div>Add more transactions to unlock insights.</div>';
+    }
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    async function addTransactionNL() {
+      const input = document.getElementById('nl-input');
+      const text = input.value.trim();
+      if (!text) return;
+      const resultDiv = document.getElementById('nl-result');
+      resultDiv.innerHTML = '<div style="color:#64748b;padding:8px 0;">Processing...</div>';
+      try {
+        const res = await api(`${API_BASE}/transactions/nl`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+        if (res.error) { resultDiv.innerHTML = `<div class="error">${escapeHtml(res.error)}</div>`; toast('Transaction failed'); }
+        else {
+          resultDiv.innerHTML = `<div class="success">Transaction recorded! <strong>${fmt(res.proposal?.amount)} ${res.proposal?.currency || 'XAF'}</strong> — ${escapeHtml(res.proposal?.description || '')}</div>`;
+          input.value = '';
+          toast('Transaction saved');
+          refresh();
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<div class="error">${escapeHtml(err.message)}</div>`;
+        toast('Transaction failed');
+      }
+    }
+
+    async function askAssistant() {
+      const input = document.getElementById('assistant-input');
+      const q = input.value.trim();
+      if (!q) return;
+      const history = document.getElementById('chat-history');
+      history.innerHTML += `<div class="bubble user"><div>${escapeHtml(q)}<div class="meta">You • ${timeAgo()}</div></div>`;
+      input.value = '';
+      const thinking = document.createElement('div');
+      thinking.className = 'bubble assistant';
+      thinking.innerHTML = '<div style="color:#64748b;">LedgerMate is thinking...</div>';
+      history.appendChild(thinking);
+      history.scrollTop = history.scrollHeight;
+      try {
+        const res = await api(`${API_BASE}/assistant`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: q }) });
+        thinking.innerHTML = `<div>${escapeHtml(res.answer)}<div class="meta">LedgerMate • ${timeAgo()}</div></div>`;
+      } catch (err) {
+        thinking.innerHTML = `<div class="error">Sorry, I couldn't process that.</div>`;
+      }
+      history.scrollTop = history.scrollHeight;
+    }
+
+    function quickAsk(q) {
+      document.getElementById('assistant-input').value = q;
+      askAssistant();
+    }
+
+    function clearChat() {
+      const history = document.getElementById('chat-history');
+      history.innerHTML = '<div class="bubble assistant"><div>Conversation cleared. How can I help?</div><div class="meta">LedgerMate • just now</div></div>';
+    }
+
+    async function exportCSV() {
+      try {
+        const res = await fetch(`${API_BASE}/export/csv`);
+        if (!res.ok) return alert('No transactions to export');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'transactions.csv'; a.click();
+        toast('CSV exported');
+      } catch { toast('Export failed'); }
+    }
+
+    async function exportJSON() {
+      try {
+        const res = await fetch(`${API_BASE}/export/json`);
+        if (!res.ok) return alert('No transactions to export');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'transactions.json'; a.click();
+        toast('JSON exported');
+      } catch { toast('Export failed'); }
+    }
+
+    async function refreshReports() {
+      try {
+        const [dash, txns, cats] = await Promise.all([ api(`${API_BASE}/dashboard?period=${document.getElementById('period').value}`), api(`${API_BASE}/transactions`), api(`${API_BASE}/analytics/categories?period=${document.getElementById('period').value}`) ]);
+        renderReports(dash, txns, cats);
+      } catch { toast('Failed to refresh reports'); }
+    }
+
+    async function detectModel() {
+      try {
+        const health = await api(`${API_BASE}/health`);
+        const el = document.getElementById('model-status');
+        if (health && health.offline === 'true') { el.innerHTML = '<span style="color:#10b981;font-weight:700;">● Local AI Active</span><div style="color:#64748b;font-size:12px;margin-top:4px;">llama.cpp runtime detected</div>'; }
+        else { el.innerHTML = '<span style="color:#f59e0b;font-weight:700;">● Model Status Unknown</span>'; }
+      } catch { document.getElementById('model-status').innerHTML = 'Unable to detect model status.'; }
+    }
+
+    document.getElementById('assistant-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') askAssistant(); });
+    document.getElementById('nl-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTransactionNL(); });
+
+    refresh();
+    detectModel();
+    setInterval(refresh, 30000);
+
+    // Extended page handlers
+    async function createInvoice() {
+      const name = prompt('Customer name:');
+      if (!name) return;
+      const items = [{ name: 'Item 1', quantity: 1, unit_price: 1000 }];
+      const payload = { customer_name: name, items, subtotal: 1000, tax: 0, discount: 0, total: 1000, currency: 'XAF', status: 'draft' };
+      const res = await api(`${API_BASE}/invoices`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      toast('Invoice created');
+      renderInvoices();
+    }
+
+    async function renderInvoices() {
+      const rows = await api(`${API_BASE}/invoices`);
+      document.getElementById('invoice-list').innerHTML = rows.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>${rows.map(r => `<tr>
+          <td>${escapeHtml(r.invoice_id)}</td>
+          <td>${escapeHtml(r.customer_name || '')}</td>
+          <td>${fmt(r.total)}</td>
+          <td><span class="badge" style="background:#f1f5f9;color:#475569;">${r.status}</span></td>
+        </tr>`).join('')}</tbody>
+      </table></div>` : '<div class="empty">No invoices yet.</div>';
+    }
+
+    async function addCustomer() {
+      const name = prompt('Customer name:');
+      if (!name) return;
+      await api(`${API_BASE}/customers`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      toast('Customer added');
+      renderCustomers();
+    }
+
+    async function renderCustomers() {
+      const rows = await api(`${API_BASE}/customers`);
+      document.getElementById('customer-list').innerHTML = rows.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th></tr></thead>
+        <tbody>${rows.map(r => `<tr>
+          <td>${escapeHtml(r.customer_id)}</td>
+          <td>${escapeHtml(r.name)}</td>
+          <td>${escapeHtml(r.email || '')}</td>
+          <td>${escapeHtml(r.phone || '')}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>` : '<div class="empty">No customers yet.</div>';
+    }
+
+    async function addProduct() {
+      const name = prompt('Product name:');
+      if (!name) return;
+      await api(`${API_BASE}/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, selling_price: 1000 }) });
+      toast('Product added');
+      renderProducts();
+    }
+
+    async function renderProducts() {
+      const rows = await api(`${API_BASE}/products`);
+      document.getElementById('product-list').innerHTML = rows.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Stock</th></tr></thead>
+        <tbody>${rows.map(r => `<tr>
+          <td>${escapeHtml(r.product_id)}</td>
+          <td>${escapeHtml(r.name)}</td>
+          <td>${fmt(r.selling_price)}</td>
+          <td>${r.stock_quantity}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>` : '<div class="empty">No products yet.</div>';
+    }
+
+    async function renderTrash() {
+      const rows = await api(`${API_BASE}/trash`);
+      document.getElementById('trash-list').innerHTML = rows.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Collection</th><th>Deleted</th><th>Actions</th></tr></thead>
+        <tbody>${rows.map(r => `<tr>
+          <td>${escapeHtml(r.item_id)}</td>
+          <td>${escapeHtml(r.collection)}</td>
+          <td>${fmtDate(r.deleted_at)}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="restoreItem('${escapeHtml(r.item_id)}')">Restore</button>
+            <button class="btn btn-danger btn-sm" onclick="permanentDelete('${escapeHtml(r.item_id)}')">Delete</button>
+          </td>
+        </tr>`).join('')}</tbody>
+      </table></div>` : '<div class="empty">Trash is empty.</div>';
+    }
+
+    async function restoreItem(id) {
+      await api(`${API_BASE}/trash/${encodeURIComponent(id)}/restore`, { method: 'POST' });
+      toast('Item restored');
+      renderTrash();
+    }
+
+    async function permanentDelete(id) {
+      if (!confirm('Permanently delete this item? This cannot be undone.')) return;
+      await api(`${API_BASE}/trash/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      toast('Item permanently deleted');
+      renderTrash();
+    }
+
+    const pageRenderers = {
+      invoices: renderInvoices,
+      customers: renderCustomers,
+      products: renderProducts,
+      trash: renderTrash,
+    };
+
+    const originalShowPage = showPage;
+    showPage = async function(page) {
+      originalShowPage(page);
+      const renderer = pageRenderers[page];
+      if (renderer) await renderer();
+    };
+  </script>
   </body>
-  </html>
+</html>

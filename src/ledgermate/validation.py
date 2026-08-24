@@ -37,8 +37,20 @@ def validate_transaction(data: dict) -> Transaction:
 
     # Type
     raw_type = str(data.get("type", "")).strip().lower()
+    _TYPE_ALIASES = {
+        "sale": "income",
+        "sell": "income",
+        "income": "income",
+        "expense": "expense",
+        "purchase": "expense",
+        "bought": "expense",
+        "transfer": "transfer",
+        "debt_in": "debt_in",
+        "debt_out": "debt_out",
+    }
+    canonical_type = _TYPE_ALIASES.get(raw_type, raw_type)
     try:
-        txn_type = TransactionType(raw_type)
+        txn_type = TransactionType(canonical_type)
     except ValueError:
         raise ValidationError(f"Unknown transaction type: {raw_type}")
 

@@ -161,6 +161,21 @@ def create_transaction(txn: TransactionInput) -> dict:
         data["date"] = date.today().isoformat()
     if not data.get("transaction_id"):
         data["transaction_id"] = f"txn-{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+    # Map natural language aliases to canonical transaction types.
+    _TYPE_ALIASES = {
+        'sale': 'income',
+        'sell': 'income',
+        'income': 'income',
+        'expense': 'expense',
+        'purchase': 'expense',
+        'bought': 'expense',
+        'transfer': 'transfer',
+        'debt_in': 'debt_in',
+        'debt_out': 'debt_out',
+    }
+    raw_type = str(data.get('type', 'expense')).strip().lower()
+    data['type'] = _TYPE_ALIASES.get(raw_type, raw_type)
+
     try:
         validated = validate_transaction(data)
     except Exception as exc:
@@ -183,6 +198,16 @@ def create_transaction_nl(input_data: NaturalLanguageInput) -> dict:
         validated = validate_transaction(extracted)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Validation failed: {exc}") from exc
+    # Map natural language aliases to canonical transaction types before persistence.
+    _TYPE_ALIASES = {
+        'sale': 'income', 'sell': 'income', 'income': 'income',
+        'expense': 'expense', 'purchase': 'expense', 'bought': 'expense',
+        'transfer': 'transfer', 'debt_in': 'debt_in', 'debt_out': 'debt_out',
+    }
+    raw_type = str(validated.type.value if hasattr(validated.type, 'value') else validated.type).strip().lower()
+    canonical = _TYPE_ALIASES.get(raw_type, raw_type)
+    if canonical != raw_type:
+        validated.type = TransactionType(canonical)
     if not validated.transaction_id:
         validated.transaction_id = f"txn-{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
     try:
@@ -307,3 +332,97 @@ def assistant_query(input_data: AssistantQuery) -> dict[str, Any]:
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
+
+
+# --- Local modules for invoices, customers, products, trash ---
+from ledgermate.ledger import Ledger as _Ledger
+
+def _get_ledger() -> _Ledger:
+    return _Ledger(DB_PATH)
+
+
+@app.get("/api/invoices")
+def list_invoices() -> list[dict]:
+    ledger = _get_ledger()
+    return ledger.list_invoices()
+
+
+@app.post("/api/invoices")
+def create_invoice(payload: dict) -> dict:
+    ledger = _get_ledger()
+    invoice = ledger.create_invoice(payload)
+    return {"status": "ok", "invoice": invoice}
+
+
+@app.post("/api/invoices/{invoice_id}/mark-paid")
+def mark_invoice_paid(invoice_id: str) -> dict:
+    ledger = _get_ledger()
+    invoice = ledger.mark_invoice_paid(invoice_id)
+    return {"status": "ok", "invoice": invoice}
+
+
+@app.delete("/api/invoices/{invoice_id}")
+def delete_invoice(invoice_id: str) -> dict:
+    ledger = _get_ledger()
+    ledger.delete_invoice(invoice_id)
+    return {"status": "ok"}
+
+
+@app.get("/api/customers")
+def list_customers() -> list[dict]:
+    ledger = _get_ledger()
+    return ledger.list_customers()
+
+
+@app.post("/api/customers")
+def create_customer(payload: dict) -> dict:
+    ledger = _get_ledger()
+    customer = ledger.create_customer(payload)
+    return {"status": "ok", "customer": customer}
+
+
+@app.delete("/api/customers/{customer_id}")
+def delete_customer(customer_id: str) -> dict:
+    ledger = _get_ledger()
+    ledger.delete_customer(customer_id)
+    return {"status": "ok"}
+
+
+@app.get("/api/products")
+def list_products() -> list[dict]:
+    ledger = _get_ledger()
+    return ledger.list_products()
+
+
+@app.post("/api/products")
+def create_product(payload: dict) -> dict:
+    ledger = _get_ledger()
+    product = ledger.create_product(payload)
+    return {"status": "ok", "product": product}
+
+
+@app.delete("/api/products/{product_id}")
+def delete_product(product_id: str) -> dict:
+    ledger = _get_ledger()
+    ledger.delete_product(product_id)
+    return {"status": "ok"}
+
+
+@app.get("/api/trash")
+def list_trash() -> list[dict]:
+    ledger = _get_ledger()
+    return ledger.list_trash()
+
+
+@app.post("/api/trash/{item_id}/restore")
+def restore_trash(item_id: str) -> dict:
+    ledger = _get_ledger()
+    ledger.restore_trash(item_id)
+    return {"status": "ok"}
+
+
+@app.delete("/api/trash/{item_id}")
+def permanent_delete_trash(item_id: str) -> dict:
+    ledger = _get_ledger()
+    ledger.permanent_delete_trash(item_id)
+    return {"status": "ok"}
