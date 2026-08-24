@@ -5,376 +5,648 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LedgerMate — Offline Business Intelligence</title>
   <style>
+    :root {
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --sidebar-bg: #0b1220;
+      --sidebar-text: #cbd5e1;
+      --sidebar-active: #10b981;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e5e7eb;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 6px 18px rgba(15, 23, 42, 0.06);
+      --radius: 14px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f8fafc; color: #1e293b; }
-    .flex { display: flex; }
-    .flex-col { flex-direction: column; }
-    .items-center { align-items: center; }
-    .justify-between { justify-content: space-between; }
-    .gap-4 { gap: 1rem; }
-    .grid { display: grid; }
-    .grid-cols-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-    .sidebar { width: 260px; background: #0f172a; color: white; min-height: 100vh; padding: 24px; position: fixed; left: 0; top: 0; }
-    .sidebar h1 { font-size: 24px; font-weight: 700; color: #10b981; margin-bottom: 4px; }
-    .sidebar p { font-size: 12px; color: #94a3b8; margin-bottom: 24px; }
-    .sidebar nav button { width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 6px; background: transparent; border: none; color: #cbd5e1; border-radius: 8px; cursor: pointer; font-size: 14px; }
-    .sidebar nav button:hover, .sidebar nav button.active { background: #10b981; color: white; }
-    .sidebar .offline { margin-top: auto; padding-top: 16px; border-top: 1px solid #1e293b; color: #94a3b8; font-size: 12px; }
-    .main { margin-left: 260px; padding: 24px; min-height: 100vh; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .header h2 { font-size: 22px; font-weight: 600; }
-    .header p { color: #64748b; font-size: 14px; }
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .kpi-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
-    .kpi-card .label { font-size: 13px; color: #64748b; margin-bottom: 8px; }
-    .kpi-card .value { font-size: 26px; font-weight: 700; }
-    .card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-    .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
-    .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .chart-placeholder { height: 240px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 8px; border: 2px dashed #e2e8f0; color: #64748b; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th { text-align: left; padding: 10px 12px; color: #64748b; font-weight: 500; border-bottom: 1px solid #e2e8f0; }
-    td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
-    .badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
-    .badge-income { background: #dcfce7; color: #166534; }
-    .badge-expense { background: #fee2e2; color: #991b1b; }
-    input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
-    input[type="text"]:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-    button { padding: 10px 16px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; }
-    .btn-primary { background: #10b981; color: white; }
-    .btn-primary:hover { background: #059669; }
+    html, body { height: 100%; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); }
+
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 270px;
+      background: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      display: flex;
+      flex-direction: column;
+      padding: 22px 16px 16px;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      transition: transform .2s ease;
+      z-index: 20;
+    }
+    .brand { margin-bottom: 22px; padding: 0 10px; }
+    .brand h1 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.2px; }
+    .brand p { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .nav-btn {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; text-align: left; padding: 11px 12px;
+      background: transparent; border: 0; color: #e2e8f0;
+      border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .nav-btn.active { background: rgba(16,185,129,0.18); color: #fff; }
+    .nav-btn .ico { width: 20px; text-align: center; font-size: 15px; }
+
+    .offline-pill {
+      margin-top: auto; padding: 10px 12px; border-radius: 10px;
+      background: rgba(16,185,129,0.12); color: #86efac;
+      font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 3px rgba(16,185,129,0.25); }
+
+    /* Main */
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 24px; border-bottom: 1px solid var(--border); background: var(--surface);
+    }
+    .topbar h2 { font-size: 20px; font-weight: 700; }
+    .topbar .meta { color: var(--muted); font-size: 13px; }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .select, .input {
+      padding: 9px 12px; border: 1px solid var(--border); border-radius: 10px;
+      background: #fff; font-size: 14px; color: var(--text); min-width: 160px;
+    }
+    .input { min-width: 260px; }
+    .btn {
+      padding: 9px 14px; border-radius: 10px; border: 0; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
     .btn-secondary { background: #f1f5f9; color: #334155; }
     .btn-secondary:hover { background: #e2e8f0; }
-    .assistant-card { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #bbf7d0; }
-    .assistant-answer { background: white; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin-top: 12px; }
-    .hidden { display: none !important; }
-    .empty-state { text-align: center; padding: 40px; color: #64748b; }
-    .error { background: #fef2f2; color: #991b1b; padding: 12px; border-radius: 8px; margin-top: 12px; border: 1px solid #fecaca; }
-    .success { background: #f0fdf4; color: #166534; padding: 12px; border-radius: 8px; margin-top: 12px; border: 1px solid #bbf7d0; }
-    .select { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; font-size: 14px; }
+    .btn-danger { background: #fef2f2; color: #991b1b; }
+    .btn-sm { padding: 6px 10px; font-size: 13px; border-radius: 8px; }
+
+    .content { flex: 1; overflow: auto; padding: 22px 24px 24px; }
+    .page { display: none; animation: fade .18s ease; }
+    .page.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Cards */
+    .grid { display: grid; gap: 16px; }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 20px; box-shadow: var(--shadow);
+    }
+    .card h3 { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .kpi .value { font-size: 28px; font-weight: 800; letter-spacing: -0.4px; }
+    .kpi .sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .trend { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px; display: inline-block; }
+    .trend.up { background: #dcfce7; color: #166534; }
+    .trend.down { background: #fee2e2; color: #991b1b; }
+    .trend.neutral { background: #f1f5f9; color: #475569; }
+
+    .section { margin-top: 18px; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; padding: 10px 12px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    tr:hover td { background: #f8fafc; }
+    .badge { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .badge-income { background: #dcfce7; color: #166534; }
+    .badge-expense { background: #fee2e2; color: #991b1b; }
+
+    /* Chat */
+    .chat { display: flex; flex-direction: column; height: calc(100vh - 140px); }
+    .chat-history { flex: 1; overflow: auto; padding: 8px 4px; display: flex; flex-direction: column; gap: 10px; }
+    .bubble { max-width: 78%; padding: 12px 14px; border-radius: 14px; font-size: 14px; line-height: 1.55; }
+    .bubble.user { align-self: flex-end; background: #0f172a; color: #fff; border-bottom-right-radius: 4px; }
+    .bubble.assistant { align-self: flex-start; background: #fff; border: 1px solid var(--border); color: #0f172a; border-bottom-left-radius: 4px; }
+    .bubble .meta { font-size: 11px; opacity: 0.7; margin-top: 6px; }
+    .composer { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .composer input { flex: 1; }
+
+    /* Assistant quick actions */
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .chip { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: #fff; font-size: 13px; cursor: pointer; }
+    .chip:hover { background: #f8fafc; }
+
+    .empty { text-align: center; padding: 34px; color: var(--muted); }
+    .error { background: #fef2f2; color: #991b1b; padding: 10px 12px; border-radius: 10px; border: 1px solid #fecaca; }
+    .success { background: #f0fdf4; color: #166534; padding: 10px 12px; border-radius: 10px; border: 1px solid #bbf7d0; }
+
+    .toast { position: fixed; right: 18px; bottom: 18px; background: #0f172a; color: #fff; padding: 10px 14px; border-radius: 10px; font-size: 13px; opacity: 0; transition: opacity .2s; z-index: 50; }
+    .toast.show { opacity: 1; }
+
+    .mobile-toggle { display: none; background: transparent; border: 0; font-size: 20px; cursor: pointer; }
+
+    @media (max-width: 860px) {
+      .sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-toggle { display: block; }
+      .main { margin-left: 0; }
+      .content { padding: 16px; }
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
   </style>
-</head>
-<body>
-  <div class="flex">
-    <aside class="sidebar">
-      <div>
-        <h1>LedgerMate</h1>
-        <p>Offline Business Intelligence</p>
-      </div>
-      <nav>
-        <button class="nav-btn active" data-page="dashboard">Dashboard</button>
-        <button class="nav-btn" data-page="transactions">Transactions</button>
-        <button class="nav-btn" data-page="assistant">AI Assistant</button>
-      </nav>
-      <div class="offline">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="width:8px;height:8px;background:#10b981;border-radius:50%;display:inline-block;"></span>
-          <span>Offline Mode</span>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <h1>LedgerMate</h1>
+          <p>Offline Business Intelligence</p>
         </div>
-      </div>
-    </aside>
+        <nav class="nav">
+          <button class="nav-btn active" data-page="dashboard"><span class="ico">📊</span>Dashboard</button>
+          <button class="nav-btn" data-page="transactions"><span class="ico">💳</span>Transactions</button>
+          <button class="nav-btn" data-page="reports"><span class="ico">📑</span>Reports</button>
+          <button class="nav-btn" data-page="assistant"><span class="ico">🤖</span>AI Assistant</button>
+          <button class="nav-btn" data-page="exports"><span class="ico">📤</span>Exports</button>
+          <button class="nav-btn" data-page="settings"><span class="ico">⚙️</span>Settings</button>
+        </nav>
+        <div class="offline-pill"><span class="dot"></span>Local AI • No Internet Required</div>
+      </aside>
 
-    <main class="main">
-      <div class="header">
-        <div>
-          <h2 id="page-title">Dashboard</h2>
-          <p id="page-date"></p>
-        </div>
-        <div class="flex items-center gap-4">
-          <select id="period" class="select">
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month" selected>This Month</option>
-            <option value="year">This Year</option>
-          </select>
-          <button onclick="refresh()" class="btn-secondary">Refresh</button>
-        </div>
-      </div>
-
-      <!-- Dashboard Page -->
-      <div id="page-dashboard">
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="label">Income</div>
-            <div class="value" id="kpi-income" style="color:#059669;">0 XAF</div>
-          </div>
-          <div class="kpi-card">
-            <div class="label">Expenses</div>
-            <div class="value" id="kpi-expenses" style="color:#dc2626;">0 XAF</div>
-          </div>
-          <div class="kpi-card">
-            <div class="label">Net Profit</div>
-            <div class="value" id="kpi-profit">0 XAF</div>
-          </div>
-          <div class="kpi-card">
-            <div class="label">Cash Position</div>
-            <div class="value" id="kpi-cash">0 XAF</div>
-          </div>
-        </div>
-
-        <div class="charts-row">
-          <div class="card">
-            <h3>Expense Breakdown</h3>
-            <div id="expense-chart" class="chart-placeholder">No expense data available</div>
-          </div>
-          <div class="card">
-            <h3>Income Breakdown</h3>
-            <div id="income-chart" class="chart-placeholder">No income data available</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3>Recent Transactions</h3>
-          <div id="recent-transactions">
-            <div class="empty-state">No transactions yet. Add your first transaction to get started.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Transactions Page -->
-      <div id="page-transactions" class="hidden">
-        <div class="card">
-          <h3>Add Transaction</h3>
-          <div class="flex gap-4" style="margin-top:12px;">
-            <input type="text" id="nl-input" placeholder="Tell LedgerMate what happened... e.g., 'I bought fish for 3000 XAF'" />
-            <button onclick="addTransactionNL()" class="btn-primary">Add</button>
-          </div>
-          <div id="nl-result"></div>
-        </div>
-        <div class="card">
-          <div class="flex justify-between items-center" style="margin-bottom:16px;">
-            <h3>All Transactions</h3>
-            <div class="flex gap-2">
-              <button onclick="exportCSV()" class="btn-secondary">Export CSV</button>
-              <button onclick="exportJSON()" class="btn-secondary">Export JSON</button>
+      <div class="main">
+        <div class="topbar">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="mobile-toggle" id="menu-toggle">☰</button>
+            <div>
+              <h2 id="page-title">Dashboard</h2>
+              <div class="meta" id="page-meta">This month</div>
             </div>
           </div>
-          <div id="all-transactions">
-            <div class="empty-state">No transactions yet</div>
+          <div class="topbar-actions">
+            <select id="period" class="select">
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month" selected>This Month</option>
+              <option value="year">This Year</option>
+              <option value="all">All Time</option>
+            </select>
+            <button class="btn btn-secondary" onclick="refresh()">Refresh</button>
           </div>
         </div>
-      </div>
 
-      <!-- Assistant Page -->
-      <div id="page-assistant" class="hidden">
-        <div class="card">
-          <h3>Ask LedgerMate</h3>
-          <div class="flex gap-4" style="margin-top:12px;margin-bottom:12px;">
-            <input type="text" id="assistant-input" placeholder="Ask about your business... e.g., 'How is my business doing?'" />
-            <button onclick="askAssistant()" class="btn-primary">Ask</button>
-          </div>
-          <div style="margin-bottom:12px;">
-            <p style="font-size:13px;color:#64748b;margin-bottom:8px;">Try asking:</p>
-            <div class="flex gap-2" style="flex-wrap:wrap;">
-              <button onclick="quickAsk('How is my business doing?')" class="btn-secondary">How is my business doing?</button>
-              <button onclick="quickAsk('What are my biggest expenses?')" class="btn-secondary">What are my biggest expenses?</button>
-              <button onclick="quickAsk('Am I profitable?')" class="btn-secondary">Am I profitable?</button>
-              <button onclick="quickAsk('Give me a summary')" class="btn-secondary">Give me a summary</button>
+        <div class="content">
+          <!-- Dashboard -->
+          <div id="page-dashboard" class="page active">
+            <div class="grid grid-4">
+              <div class="card kpi">
+                <div class="label">Income</div>
+                <div class="value" id="kpi-income" style="color:#059669;">0 XAF</div>
+                <div class="sub" id="kpi-income-sub">No income yet</div>
+              </div>
+              <div class="card kpi">
+                <div class="label">Expenses</div>
+                <div class="value" id="kpi-expenses" style="color:#dc2626;">0 XAF</div>
+                <div class="sub" id="kpi-expenses-sub">No expenses yet</div>
+              </div>
+              <div class="card kpi">
+                <div class="label">Net Profit</div>
+                <div class="value" id="kpi-profit">0 XAF</div>
+                <div class="sub" id="kpi-profit-sub">Income minus expenses</div>
+              </div>
+              <div class="card kpi">
+                <div class="label">Cash Position</div>
+                <div class="value" id="kpi-cash">0 XAF</div>
+                <div class="sub" id="kpi-cash-sub">Available cash</div>
+              </div>
+            </div>
+
+            <div class="grid grid-3 section">
+              <div class="card">
+                <h3>Business Health</h3>
+                <div id="business-health">
+                  <div class="empty">Add transactions to see insights.</div>
+                </div>
+              </div>
+              <div class="card">
+                <h3>Top Expense Categories</h3>
+                <div id="top-expenses">
+                  <div class="empty">No expense data available.</div>
+                </div>
+              </div>
+              <div class="card">
+                <h3>Smart Insight</h3>
+                <div id="ai-insight">
+                  <div class="empty">Keep recording transactions for insights.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="card">
+                <h3>Recent Transactions</h3>
+                <div id="recent-transactions">
+                  <div class="empty">No transactions yet. Add your first transaction to get started.</div>
+                </div>
+              </div>
             </div>
           </div>
-          <div id="assistant-result"></div>
+
+          <!-- Transactions -->
+          <div id="page-transactions" class="page">
+            <div class="card">
+              <h3>Add Transaction</h3>
+              <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Describe what happened in plain language.</p>
+              <div style="display:flex;gap:10px;">
+                <input id="nl-input" class="input" placeholder='Example: "I bought fish for 3000 XAF and tomato for 500"' />
+                <button class="btn btn-primary" onclick="addTransactionNL()">Add</button>
+              </div>
+              <div id="nl-result" style="margin-top:10px;"></div>
+            </div>
+
+            <div class="card section">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h3>All Transactions</h3>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-secondary btn-sm" onclick="exportCSV()">Export CSV</button>
+                  <button class="btn btn-secondary btn-sm" onclick="exportJSON()">Export JSON</button>
+                </div>
+              </div>
+              <div id="all-transactions">
+                <div class="empty">No transactions yet</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reports -->
+          <div id="page-reports" class="page">
+            <div class="grid grid-2">
+              <div class="card">
+                <h3>Financial Summary</h3>
+                <div id="report-financial">
+                  <div class="empty">No data yet.</div>
+                </div>
+              </div>
+              <div class="card">
+                <h3>Expense Breakdown</h3>
+                <div id="report-expenses">
+                  <div class="empty">No expense data yet.</div>
+                </div>
+              </div>
+            </div>
+            <div class="card section">
+              <h3>Business Summary</h3>
+              <div id="report-summary">
+                <div class="empty">Not enough data for a summary.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Assistant -->
+          <div id="page-assistant" class="page">
+            <div class="card" style="height:calc(100vh - 110px);display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <h3>LedgerMate AI</h3>
+                <button class="btn btn-secondary btn-sm" onclick="clearChat()">Clear</button>
+              </div>
+              <div class="chat-history" id="chat-history">
+                <div class="bubble assistant">
+                  <div>Hello! I'm your offline business assistant. Ask me about your business, expenses, profit, or anything finance-related.</div>
+                  <div class="meta">LedgerMate • just now</div>
+                </div>
+              </div>
+              <div class="chips" id="quick-chips">
+                <button class="chip" onclick="quickAsk('How is my business doing?')">How is my business doing?</button>
+                <button class="chip" onclick="quickAsk('What are my biggest expenses?')">Biggest expenses</button>
+                <button class="chip" onclick="quickAsk('Am I profitable?')">Am I profitable?</button>
+                <button class="chip" onclick="quickAsk('Give me a summary')">Give me a summary</button>
+              </div>
+              <div class="composer">
+                <input id="assistant-input" class="input" placeholder="Ask LedgerMate about your business..." />
+                <button class="btn btn-primary" onclick="askAssistant()">Send</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Exports -->
+          <div id="page-exports" class="page">
+            <div class="grid grid-2">
+              <div class="card">
+                <h3>Export Transactions</h3>
+                <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Download your transaction history.</p>
+                <div style="display:flex;gap:10px;">
+                  <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+                  <button class="btn btn-secondary" onclick="exportJSON()">Export JSON</button>
+                </div>
+              </div>
+              <div class="card">
+                <h3>Reports</h3>
+                <p style="color:#64748b;font-size:13px;margin-bottom:10px;">Generate business summaries from actual data.</p>
+                <button class="btn btn-secondary" onclick="refreshReports()">Refresh Reports</button>
+              </div>
+            </div>
+            <div class="card section">
+              <h3>Privacy</h3>
+              <p style="color:#475569;font-size:14px;">LedgerMate is designed to operate offline. Your financial data stays on this device. Exports are generated locally.</p>
+            </div>
+          </div>
+
+          <!-- Settings -->
+          <div id="page-settings" class="page">
+            <div class="grid grid-2">
+              <div class="card">
+                <h3>Business</h3>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+                  <div>
+                    <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Business Name</label>
+                    <input id="setting-business-name" class="input" placeholder="My Business" />
+                  </div>
+                  <div>
+                    <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Currency</label>
+                    <input id="setting-currency" class="input" value="XAF" />
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <h3>AI Model</h3>
+                <div id="model-status" style="margin-top:8px;color:#475569;font-size:14px;">Detecting local model...</div>
+              </div>
+            </div>
+            <div class="card section">
+              <h3>Privacy</h3>
+              <p style="color:#475569;font-size:14px;">LedgerMate runs fully offline. No telemetry. No cloud AI. No remote analytics. Financial data never leaves this device during normal operation.</p>
+            </div>
+          </div>
         </div>
       </div>
-    </main>
-  </div>
+    </div>
 
-  <script>
-    const API_BASE = '/api';
-    let currentPage = 'dashboard';
-    let dashboardData = null;
-    let transactions = [];
+    <div class="toast" id="toast"></div>
 
-    function showPage(page) {
-      currentPage = page;
-      document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`page-${page}`).classList.remove('hidden');
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === page));
-      const titles = { dashboard: 'Dashboard', transactions: 'Transactions', assistant: 'AI Assistant' };
-      document.getElementById('page-title').textContent = titles[page] || page;
-    }
+    <script>
+      const API_BASE = '/api';
+      let currentPage = 'dashboard';
+      let transactions = [];
+      let dashboardData = null;
 
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.addEventListener('click', () => showPage(btn.dataset.page));
-    });
-
-    document.getElementById('period').addEventListener('change', refresh);
-
-    async function api(url, options = {}) {
-      const res = await fetch(url, options);
-      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
-      return res.status === 204 ? null : res.json();
-    }
-
-    function formatCurrency(value) {
-      const num = parseFloat(value || '0');
-      return `${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} XAF`;
-    }
-
-    async function loadDashboard() {
-      try {
-        const [dash, txns, cats] = await Promise.all([
-          api(`${API_BASE}/dashboard?period=${document.getElementById('period').value}`),
-          api(`${API_BASE}/transactions`),
-          api(`${API_BASE}/analytics/categories?period=${document.getElementById('period').value}`),
-        ]);
-        dashboardData = dash;
-        transactions = txns || [];
-        renderDashboard(dash, txns, cats);
-      } catch (err) {
-        console.error('Failed to load dashboard', err);
+      function toast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2400);
       }
-    }
 
-    function renderDashboard(dash, txns, cats) {
-      if (!dash) return;
-      document.getElementById('kpi-income').textContent = formatCurrency(dash.income);
-      document.getElementById('kpi-expenses').textContent = formatCurrency(dash.expenses);
-      document.getElementById('kpi-profit').textContent = formatCurrency(dash.profit);
-      document.getElementById('kpi-cash').textContent = formatCurrency(dash.cash);
-
-      const expenseEntries = Object.entries(cats?.expense_by_category || {});
-      const incomeEntries = Object.entries(cats?.income_by_category || {});
-
-      document.getElementById('expense-chart').innerHTML = expenseEntries.length
-        ? `<div style="width:100%;padding:16px;">
-            ${expenseEntries.map(([name, val]) => `
-              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;">
-                <span style="font-size:14px;color:#475569;">${name}</span>
-                <span style="font-size:14px;font-weight:600;color:#dc2626;">${formatCurrency(val)}</span>
-              </div>
-            `).join('')}
-          </div>`
-        : 'No expense data available';
-
-      document.getElementById('income-chart').innerHTML = incomeEntries.length
-        ? `<div style="width:100%;padding:16px;">
-            ${incomeEntries.map(([name, val]) => `
-              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;">
-                <span style="font-size:14px;color:#475569;">${name}</span>
-                <span style="font-size:14px;font-weight:600;color:#059669;">${formatCurrency(val)}</span>
-              </div>
-            `).join('')}
-          </div>`
-        : 'No income data available';
-
-      const recent = txns.slice(0, 10);
-      document.getElementById('recent-transactions').innerHTML = recent.length
-        ? `<div style="overflow-x:auto;">
-            <table>
-              <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th style="text-align:right;">Amount</th></tr></thead>
-            <tbody>${recent.map(t => `
-              <tr>
-                <td>${t.date}</td>
-                <td>${t.description}</td>
-                <td><span class="badge" style="background:#f1f5f9;color:#475569;">${t.category}</span></td>
-                <td><span class="badge ${t.type === 'income' ? 'badge-income' : 'badge-expense'}">${t.type}</span></td>
-                <td style="text-align:right;font-weight:600;color:${t.type === 'income' ? '#059669' : '#dc2626'};">
-                  ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
-                </td>
-              </tr>
-            `).join('')}</tbody>
-          </table></div>`
-        : '<div class="empty-state">No transactions yet. Add your first transaction to get started.</div>';
-    }
-
-    function renderTransactions() {
-      const container = document.getElementById('all-transactions');
-      if (!transactions.length) {
-        container.innerHTML = '<div class="empty-state">No transactions yet</div>';
-        return;
+      function showPage(page) {
+        currentPage = page;
+        document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.remove('active'));
+        document.getElementById('page-' + page)?.classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === page));
+        const titles = { dashboard: 'Dashboard', transactions: 'Transactions', reports: 'Reports', assistant: 'AI Assistant', exports: 'Exports', settings: 'Settings' };
+        document.getElementById('page-title').textContent = titles[page] || page;
+        if (page === 'reports') refreshReports();
       }
-      container.innerHTML = `<div style="overflow-x:auto;">
-        <table>
-          <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th style="text-align:right;">Amount</th></tr></thead>
-        <tbody>${transactions.map(t => `
-          <tr>
-            <td>${t.date}</td>
-            <td>${t.description}</td>
-            <td><span class="badge" style="background:#f1f5f9;color:#475569;">${t.category}</span></td>
-            <td><span class="badge ${t.type === 'income' ? 'badge-income' : 'badge-expense'}">${t.type}</span></td>
-            <td style="text-align:right;font-weight:600;color:${t.type === 'income' ? '#059669' : '#dc2626'};">
-              ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
-            </td>
-          </tr>
-        `).join('')}</tbody>
-        </table></div>`;
-    }
 
-    async function addTransactionNL() {
-      const input = document.getElementById('nl-input');
-      const text = input.value.trim();
-      if (!text) return;
-      const resultDiv = document.getElementById('nl-result');
-      resultDiv.innerHTML = '<div style="color:#64748b;padding:8px 0;">Processing...</div>';
-      try {
-        const res = await api(`${API_BASE}/transactions/nl`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text }),
-        });
-        if (res.error) {
-          resultDiv.innerHTML = `<div class="error">${res.error}</div>`;
-        } else {
-          resultDiv.innerHTML = `<div class="success">Transaction recorded successfully! Amount: ${formatCurrency(res.proposal?.amount)} ${res.proposal?.currency} — ${res.proposal?.description}</div>`;
-          input.value = '';
-          refresh();
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
+      document.getElementById('menu-toggle')?.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
+      document.getElementById('period').addEventListener('change', () => {
+        const labels = { today: 'Today', week: 'This Week', month: 'This Month', year: 'This Year', all: 'All Time' };
+        document.getElementById('page-meta').textContent = labels[document.getElementById('period').value] || '';
+        refresh();
+      });
+
+      async function api(url, options = {}) {
+        const res = await fetch(url, options);
+        if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+        return res.status === 204 ? null : res.json();
+      }
+
+      function fmt(n) {
+        const num = parseFloat(n || '0');
+        if (Number.isNaN(num)) return '0 XAF';
+        return `${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} XAF`;
+      }
+
+      function fmtDate(d) {
+        if (!d) return '';
+        const dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+
+      function timeAgo() {
+        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+
+      async function refresh() {
+        try {
+          const [dash, txns, cats] = await Promise.all([
+            api(`${API_BASE}/dashboard?period=${document.getElementById('period').value}`),
+            api(`${API_BASE}/transactions`),
+            api(`${API_BASE}/analytics/categories?period=${document.getElementById('period').value}`),
+          ]);
+          dashboardData = dash;
+          transactions = txns || [];
+          renderDashboard(dash, txns, cats);
+          renderTransactions();
+          renderReports(dash, txns, cats);
+        } catch (err) {
+          console.error('Refresh failed', err);
+          toast('Refresh failed');
         }
-      } catch (err) {
-        resultDiv.innerHTML = `<div class="error">Failed: ${err.message}</div>`;
       }
-    }
 
-    async function askAssistant() {
-      const input = document.getElementById('assistant-input');
-      const q = input.value.trim();
-      if (!q) return;
-      const resultDiv = document.getElementById('assistant-result');
-      resultDiv.innerHTML = '<div style="color:#64748b;padding:8px 0;">Thinking...</div>';
-      try {
-        const res = await api(`${API_BASE}/assistant`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: q }),
-        });
-        resultDiv.innerHTML = `<div class="assistant-answer"><strong>LedgerMate:</strong> ${res.answer}</div>`;
-      } catch (err) {
-        resultDiv.innerHTML = `<div class="error">Sorry, I could not process that question.</div>`;
+      function renderDashboard(dash, txns, cats) {
+        if (!dash) return;
+        document.getElementById('kpi-income').textContent = fmt(dash.income);
+        document.getElementById('kpi-expenses').textContent = fmt(dash.expenses);
+        const profit = parseFloat(dash.profit || '0');
+        const profitEl = document.getElementById('kpi-profit');
+        profitEl.textContent = fmt(dash.profit);
+        profitEl.style.color = profit > 0 ? '#059669' : profit < 0 ? '#dc2626' : '#0f172a';
+        document.getElementById('kpi-cash').textContent = fmt(dash.cash);
+
+        document.getElementById('kpi-income-sub').textContent = dash.income_count ? `${dash.income_count} income transaction${dash.income_count === 1 ? '' : 's'}` : 'No income yet';
+        document.getElementById('kpi-expenses-sub').textContent = dash.expense_count ? `${dash.expense_count} expense transaction${dash.expense_count === 1 ? '' : 's'}` : 'No expenses yet';
+
+        const health = computeHealth(dash);
+        document.getElementById('business-health').innerHTML = health;
+
+        const topExpenses = Object.entries(cats?.expense_by_category || {}).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1])).slice(0, 5);
+        document.getElementById('top-expenses').innerHTML = topExpenses.length ? topExpenses.map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:14px;color:#475569;">${k}</span><span style="font-weight:700;color:#dc2626;">${fmt(v)}</span></div>`).join('') : '<div class="empty">No expense data available.</div>';
+
+        const insight = computeInsight(dash, txns || []);
+        document.getElementById('ai-insight').innerHTML = insight;
+
+        const recent = (txns || []).slice(0, 8);
+        document.getElementById('recent-transactions').innerHTML = recent.length ? `<div class="table-wrap"><table>
+          <thead><tr><th>Date</th><th>Description</th><th>Category</th><th style="text-align:right;">Amount</th></tr></thead>
+          <tbody>${recent.map(t => `<tr>
+            <td>${fmtDate(t.date)}</td>
+            <td>${escapeHtml(t.description)}</td>
+            <td><span class="badge" style="background:#f1f5f9;color:#475569;">${escapeHtml(t.category)}</span></td>
+            <td style="text-align:right;font-weight:700;color:${t.type === 'income' ? '#059669' : '#dc2626'};">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>` : '<div class="empty">No transactions yet. Add your first transaction to get started.</div>';
       }
-    }
 
-    function quickAsk(q) {
-      document.getElementById('assistant-input').value = q;
-      askAssistant();
-    }
+      function renderTransactions() {
+        const container = document.getElementById('all-transactions');
+        if (!transactions.length) { container.innerHTML = '<div class="empty">No transactions yet</div>'; return; }
+        container.innerHTML = `<div class="table-wrap"><table>
+          <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th style="text-align:right;">Amount</th></tr></thead>
+          <tbody>${transactions.map(t => `<tr>
+            <td>${fmtDate(t.date)}</td>
+            <td>${escapeHtml(t.description)}</td>
+            <td><span class="badge" style="background:#f1f5f9;color:#475569;">${escapeHtml(t.category)}</span></td>
+            <td><span class="badge ${t.type === 'income' ? 'badge-income' : 'badge-expense'}">${t.type}</span></td>
+            <td style="text-align:right;font-weight:700;color:${t.type === 'income' ? '#059669' : '#dc2626'};">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>`;
+      }
 
-    async function exportCSV() {
-      const res = await fetch(`${API_BASE}/export/csv`);
-      if (!res.ok) return alert('No transactions to export');
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'transactions.csv'; a.click();
-    }
+      function renderReports(dash, txns, cats) {
+        const expenseEntries = Object.entries(cats?.expense_by_category || {}).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
+        const incomeEntries = Object.entries(cats?.income_by_category || {}).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
+        document.getElementById('report-financial').innerHTML = dash ? `
+          <div style="display:grid;gap:8px;">
+            <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Income</span><span style="font-weight:700;color:#059669;">${fmt(dash.income)}</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Expenses</span><span style="font-weight:700;color:#dc2626;">${fmt(dash.expenses)}</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Net</span><span style="font-weight:700;">${fmt(dash.profit)}</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Transactions</span><span style="font-weight:700;">${dash.transaction_count}</span></div>
+          </div>` : '<div class="empty">No data yet.</div>';
 
-    async function exportJSON() {
-      const res = await fetch(`${API_BASE}/export/json`);
-      if (!res.ok) return alert('No transactions to export');
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'transactions.json'; a.click();
-    }
+        document.getElementById('report-expenses').innerHTML = expenseEntries.length ? expenseEntries.map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;"><span>${k}</span><span style="font-weight:700;color:#dc2626;">${fmt(v)}</span></div>`).join('') : '<div class="empty">No expense data yet.</div>';
 
-    function refresh() {
-      loadDashboard();
-      renderTransactions();
-    }
+        const rows = txns || [];
+        const income = rows.filter(r => r.type === 'income').reduce((s, r) => s + parseFloat(r.amount || '0'), 0);
+        const expense = rows.filter(r => r.type === 'expense').reduce((s, r) => s + parseFloat(r.amount || '0'), 0);
+        document.getElementById('report-summary').innerHTML = rows.length ? `
+          <p><strong>Overall:</strong> Your business is currently ${income >= expense ? 'profitable' : 'running at a loss'}.</p>
+          <p style="margin-top:8px;"><strong>Money coming in:</strong> ${fmt(income)}</p>
+          <p><strong>Money going out:</strong> ${fmt(expense)}</p>
+          <p><strong>Profit:</strong> ${fmt(income - expense)}</p>
+          <p style="margin-top:8px;color:#64748b;">Keep tracking for better insights.</p>` : '<div class="empty">Not enough data for a summary.</div>';
+      }
 
-    document.getElementById('nl-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTransactionNL(); });
-    document.getElementById('assistant-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') askAssistant(); });
+      function computeHealth(dash) {
+        if (!dash || !dash.transaction_count) return '<div class="empty">Add transactions to see business health.</div>';
+        const expense = parseFloat(dash.expenses || '0');
+        const income = parseFloat(dash.income || '0');
+        const profit = income - expense;
+        let status = 'Stable', color = '#f59e0b', reason = 'Revenue covers expenses.';
+        if (dash.transaction_count < 3) { status = 'Getting started'; color = '#64748b'; reason = 'Keep recording transactions.'; }
+        else if (profit > 0 && income > 0) { status = 'Strong'; color = '#10b981'; reason = 'Revenue exceeds expenses.'; }
+        else if (profit < 0) { status = 'Needs attention'; color = '#ef4444'; reason = 'Expenses exceed income.'; }
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="width:10px;height:10px;border-radius:50%;background:${color};"></span><span style="font-weight:700;">${status}</span></div><div style="color:#64748b;font-size:13px;">${reason}</div>`;
+      }
 
-    document.getElementById('page-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    refresh();
-  </script>
-</body>
-</html>
+      function computeInsight(dash, txns) {
+        if (!dash || !txns.length) return '<div class="empty">Keep recording transactions for insights.</div>';
+        const top = dash.top_expense_category;
+        if (top) return `<div><strong>Top expense:</strong> ${top}</div><div style="color:#64748b;font-size:13px;margin-top:6px;">Focus on reducing spending in this category if possible.</div>`;
+        return '<div>Add more transactions to unlock insights.</div>';
+      }
+
+      function escapeHtml(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      async function addTransactionNL() {
+        const input = document.getElementById('nl-input');
+        const text = input.value.trim();
+        if (!text) return;
+        const resultDiv = document.getElementById('nl-result');
+        resultDiv.innerHTML = '<div style="color:#64748b;padding:8px 0;">Processing...</div>';
+        try {
+          const res = await api(`${API_BASE}/transactions/nl`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+          if (res.error) { resultDiv.innerHTML = `<div class="error">${escapeHtml(res.error)}</div>`; toast('Transaction failed'); }
+          else {
+            resultDiv.innerHTML = `<div class="success">Transaction recorded! <strong>${fmt(res.proposal?.amount)} ${res.proposal?.currency || 'XAF'}</strong> — ${escapeHtml(res.proposal?.description || '')}</div>`;
+            input.value = '';
+            toast('Transaction saved');
+            refresh();
+          }
+        } catch (err) {
+          resultDiv.innerHTML = `<div class="error">Failed: ${escapeHtml(err.message)}</div>`;
+          toast('Transaction failed');
+        }
+      }
+
+      async function askAssistant() {
+        const input = document.getElementById('assistant-input');
+        const q = input.value.trim();
+        if (!q) return;
+        const history = document.getElementById('chat-history');
+        history.innerHTML += `<div class="bubble user"><div>${escapeHtml(q)}<div class="meta">You • ${timeAgo()}</div></div>`;
+        input.value = '';
+        const thinking = document.createElement('div');
+        thinking.className = 'bubble assistant';
+        thinking.innerHTML = '<div style="color:#64748b;">LedgerMate is thinking...</div>';
+        history.appendChild(thinking);
+        history.scrollTop = history.scrollHeight;
+        try {
+          const res = await api(`${API_BASE}/assistant`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: q }) });
+          thinking.innerHTML = `<div>${escapeHtml(res.answer)}<div class="meta">LedgerMate • ${timeAgo()}</div></div>`;
+        } catch (err) {
+          thinking.innerHTML = `<div class="error">Sorry, I couldn't process that.</div>`;
+        }
+        history.scrollTop = history.scrollHeight;
+      }
+
+      function quickAsk(q) {
+        document.getElementById('assistant-input').value = q;
+        askAssistant();
+      }
+
+      function clearChat() {
+        const history = document.getElementById('chat-history');
+        history.innerHTML = '<div class="bubble assistant"><div>Conversation cleared. How can I help?</div><div class="meta">LedgerMate • just now</div></div>';
+      }
+
+      async function exportCSV() {
+        try {
+          const res = await fetch(`${API_BASE}/export/csv`);
+          if (!res.ok) return alert('No transactions to export');
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = url; a.download = 'transactions.csv'; a.click();
+          toast('CSV exported');
+        } catch { toast('Export failed'); }
+      }
+
+      async function exportJSON() {
+        try {
+          const res = await fetch(`${API_BASE}/export/json`);
+          if (!res.ok) return alert('No transactions to export');
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = url; a.download = 'transactions.json'; a.click();
+          toast('JSON exported');
+        } catch { toast('Export failed'); }
+      }
+
+      async function refreshReports() {
+        try {
+          const [dash, txns, cats] = await Promise.all([ api(`${API_BASE}/dashboard?period=${document.getElementById('period').value}`), api(`${API_BASE}/transactions`), api(`${API_BASE}/analytics/categories?period=${document.getElementById('period').value}`) ]);
+          renderReports(dash, txns, cats);
+        } catch { toast('Failed to refresh reports'); }
+      }
+
+      async function detectModel() {
+        try {
+          const health = await api(`${API_BASE}/health`);
+          const el = document.getElementById('model-status');
+          if (health && health.offline === 'true') { el.innerHTML = '<span style="color:#10b981;font-weight:700;">● Local AI Active</span><div style="color:#64748b;font-size:12px;margin-top:4px;">llama.cpp runtime detected</div>'; }
+          else { el.innerHTML = '<span style="color:#f59e0b;font-weight:700;">● Model Status Unknown</span>'; }
+        } catch { document.getElementById('model-status').innerHTML = 'Unable to detect model status.'; }
+      }
+
+      document.getElementById('assistant-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') askAssistant(); });
+      document.getElementById('nl-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTransactionNL(); });
+
+      refresh();
+      if (currentPage === 'settings') detectModel();
+      setInterval(refresh, 30000);
+    </script>
+  </body>
+  </html>

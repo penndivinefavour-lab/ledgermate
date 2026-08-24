@@ -160,12 +160,15 @@ def create_transaction(txn: TransactionInput) -> dict:
     if data.get("date") is None:
         data["date"] = date.today().isoformat()
     if not data.get("transaction_id"):
-        data["transaction_id"] = f"txn-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        data["transaction_id"] = f"txn-{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
     try:
         validated = validate_transaction(data)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    ledger.add_transaction(validated)
+    try:
+        ledger.add_transaction(validated)
+    except Exception as exc:
+        raise HTTPException(status_code=409, detail=f"Transaction conflict: {exc}") from exc
     return {"status": "ok", "transaction": validated.to_dict()}
 
 
@@ -180,7 +183,17 @@ def create_transaction_nl(input_data: NaturalLanguageInput) -> dict:
         validated = validate_transaction(extracted)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Validation failed: {exc}") from exc
-    ledger.add_transaction(validated)
+    if not validated.transaction_id:
+        validated.transaction_id = f"txn-{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+    try:
+        ledger.add_transaction(validated)
+    except Exception as exc:
+        # Retry once with a fresh transaction id in case of accidental duplication
+        try:
+            validated.transaction_id = f"txn-{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+            ledger.add_transaction(validated)
+        except Exception as retry_exc:
+            raise HTTPException(status_code=409, detail=f"Transaction conflict: {retry_exc}") from retry_exc
     return {"status": "ok", "proposal": validated.to_dict(), "committed": True}
 
 
@@ -219,7 +232,7 @@ def export_csv(start_date: str | None = None, end_date: str | None = None) -> Fi
     if not rows:
         raise HTTPException(status_code=404, detail="No transactions to export")
     from ledgermate.export import export_csv as do_export_csv
-    out_path = Path(__file__).resolve().parents[2] / "exports" / "transactions.csv"
+    out_path = Path(__file__).resolve().parents[2] / "data" / "exports" / "transactions.csv"
     do_export_csv(rows, out_path)
     return FileResponse(out_path, media_type="text/csv", filename="transactions.csv")
 
@@ -231,7 +244,7 @@ def export_json(start_date: str | None = None, end_date: str | None = None) -> F
     if not rows:
         raise HTTPException(status_code=404, detail="No transactions to export")
     from ledgermate.export import export_json as do_export_json
-    out_path = Path(__file__).resolve().parents[2] / "exports" / "transactions.json"
+    out_path = Path(__file__).resolve().parents[2] / "data" / "exports" / "transactions.json"
     do_export_json(rows, out_path)
     return FileResponse(out_path, media_type="application/json", filename="transactions.json")
 
