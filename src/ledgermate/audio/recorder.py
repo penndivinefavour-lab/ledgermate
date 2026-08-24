@@ -13,7 +13,7 @@ try:
     import sounddevice as sd
 
     AUDIO_AVAILABLE = True
-except ImportError:
+except (ImportError, OSError):
     AUDIO_AVAILABLE = False
 
 from ledgermate.config import Config
