@@ -7,6 +7,9 @@ from datetime import date
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
 from ledgermate.schema import PaymentMethod, Transaction, TransactionType
 from ledgermate.validation import validate_transaction, ValidationError
 from ledgermate.ledger import Ledger
