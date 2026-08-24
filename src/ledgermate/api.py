@@ -1,9 +1,11 @@
 """LedgerMate V2 — FastAPI backend for web dashboard."""
 from __future__ import annotations
 
-import re
-import sys
 import json
+import os
+import re
+import socket
+import sys
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -610,3 +612,73 @@ def delete_conversation(conv_id: str) -> dict:
     if path.exists():
         path.unlink()
     return {"status": "ok"}
+
+
+def _port_in_use(host: str, port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(1)
+        return sock.connect_ex((host, port)) == 0
+
+
+def _owner_process(port: int) -> dict | None:
+    try:
+        output = os.popen(f"netstat -ano | findstr :{port}").read()
+    except Exception:
+        return None
+    info: dict[str, Any] = {"bindings": [], "pids": []}
+    for line in output.splitlines():
+        parts = line.split()
+        if len(parts) >= 2:
+            proto = parts[0]
+            addr = parts[1]
+            state = parts[3] if len(parts) >= 4 else ""
+            if addr.endswith(f":{port}") and state.upper() == "LISTENING":
+                pid = parts[-1]
+                info["bindings"].append({"proto": proto, "addr": addr, "state": state, "pid": pid})
+                info["pids"].append(pid)
+    unique_pids = sorted(set(info["pids"]))
+    info["pids"] = unique_pids
+    for pid in unique_pids:
+        try:
+            cmd = os.popen(f'tasklist /FI "PID eq {pid}" /NH').read().strip()
+            info.setdefault("processes", {})[pid] = cmd
+        except Exception:
+            pass
+    return info
+
+
+def _is_ledgermate_health(host: str, port: int) -> bool:
+    try:
+        import urllib.request
+        with urllib.request.urlopen(f"http://{host}:{port}/api/health", timeout=2) as resp:
+            body = resp.read().decode("utf-8")
+            return '"status":"ok"' in body and '"offline"' in body
+    except Exception:
+        return False
+
+
+def _safe_default_port(host: str, preferred_port: int) -> tuple[str, int]:
+    if not _port_in_use(host, preferred_port):
+        return host, preferred_port
+    owner = _owner_process(preferred_port)
+    ledgermate_running = bool(owner and _is_ledgermate_health(host, preferred_port))
+    print(f"[LedgerMate] Port {host}:{preferred_port} is in use.")
+    if owner:
+        print(f"[LedgerMate] Owner diagnostics: {json.dumps(owner)}")
+    if ledgermate_running:
+        print(f"[LedgerMate] Existing LedgerMate instance detected at http://{host}:{preferred_port}")
+        print(f"[LedgerMate] Open that URL instead of starting another instance.")
+        sys.exit(0)
+    fallback = preferred_port + 1
+    while _port_in_use(host, fallback):
+        fallback += 1
+    print(f"[LedgerMate] Falling back to http://{host}:{fallback}")
+    return host, fallback
+
+
+if __name__ == "__main__":
+    host = os.environ.get("LEDGERMATE_HOST", "127.0.0.1")
+    port = int(os.environ.get("LEDGERMATE_PORT", "8000"))
+    host, port = _safe_default_port(host, port)
+    print(f"[LedgerMate] Starting server at http://{host}:{port}")
+    uvicorn.run("ledgermate.api:app", host=host, port=port, reload=False)
