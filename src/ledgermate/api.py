@@ -194,22 +194,83 @@ def create_transaction_nl(input_data: NaturalLanguageInput) -> dict:
         extracted = extract_transaction_json(input_data.text)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"LLM extraction failed: {exc}") from exc
+    # Pre-compute amount from items/notes when the model omits a top-level amount.
+    if isinstance(extracted, dict) and not extracted.get("amount"):
+        items = extracted.get("items") if isinstance(extracted.get("items"), list) else None
+        computed_total = Decimal("0")
+        if items:
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                try:
+                    qty = Decimal(str(item.get("quantity", 1)))
+                    unit = Decimal(str(item.get("unit_price", item.get("total", 0))))
+                    total = Decimal(str(item.get("total", qty * unit)))
+                    if total <= 0:
+                        total = qty * unit
+                    computed_total += total
+                except Exception:
+                    continue
+        if computed_total <= 0:
+            import re
+            text = " ".join(str(v) for v in (extracted.values() if isinstance(extracted, dict) else []) if v is not None)
+            for m in re.finditer(r"(\d[\d,]*\.?\d*)", text.replace(",", "")):
+                try:
+                    computed_total += Decimal(m.group(1))
+                except Exception:
+                    continue
+        if computed_total > 0:
+            extracted["amount"] = int(computed_total)
     try:
         validated = validate_transaction(extracted)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Validation failed: {exc}") from exc
-    # Map natural language aliases to canonical transaction types before persistence.
-    _TYPE_ALIASES = {
+    # Normalize multi-item/non-standard extractions into a single committed transaction.
+    if not getattr(validated, "transaction_id", None):
+        validated.transaction_id = f"txn-{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+    raw_type = str(validated.type.value if hasattr(validated.type, 'value') else validated.type).strip().lower()
+    canonical_type = {
         'sale': 'income', 'sell': 'income', 'income': 'income',
         'expense': 'expense', 'purchase': 'expense', 'bought': 'expense',
         'transfer': 'transfer', 'debt_in': 'debt_in', 'debt_out': 'debt_out',
-    }
-    raw_type = str(validated.type.value if hasattr(validated.type, 'value') else validated.type).strip().lower()
-    canonical = _TYPE_ALIASES.get(raw_type, raw_type)
-    if canonical != raw_type:
-        validated.type = TransactionType(canonical)
-    if not validated.transaction_id:
-        validated.transaction_id = f"txn-{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+    }.get(raw_type, raw_type)
+    if canonical_type != raw_type:
+        validated.type = TransactionType(canonical_type)
+    items = extracted.get("items") if isinstance(extracted, dict) else None
+    if isinstance(items, list) and items and not getattr(validated, "amount", None):
+        total_amount = Decimal("0")
+        descriptions = []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            desc = str(item.get("description") or validated.description or "").strip()
+            if desc:
+                descriptions.append(desc)
+            try:
+                qty = Decimal(str(item.get("quantity", 1)))
+                unit = Decimal(str(item.get("unit_price", item.get("total", 0))))
+                item_total = Decimal(str(item.get("total", qty * unit)))
+                if item_total <= 0:
+                    item_total = qty * unit
+                total_amount += item_total
+            except Exception:
+                continue
+        if total_amount > 0:
+            validated = Transaction(
+                transaction_id=validated.transaction_id,
+                date=validated.date,
+                description=", ".join(descriptions) if descriptions else validated.description,
+                category=validated.category,
+                type=validated.type,
+                amount=total_amount,
+                currency=validated.currency,
+                payment_method=validated.payment_method,
+                counterparty=validated.counterparty,
+                notes=validated.notes,
+                source=validated.source,
+            )
+    if not getattr(validated, "amount", None):
+        raise HTTPException(status_code=400, detail="Validation failed: Missing required fields: ['amount']")
     try:
         ledger.add_transaction(validated)
     except Exception as exc:

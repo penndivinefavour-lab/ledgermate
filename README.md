@@ -1,36 +1,35 @@
 # LedgerMate
 
-**Offline SME Bookkeeping Assistant for Africa**
+**Offline SME Business Intelligence for Africa**
 
 Africa Deep Tech Challenge 2026 — The Laptop LLM Challenge
 
 ## Problem
 
-Small business owners in Cameroon and across Africa keep ledgers on paper, in spreadsheets, or in their heads. When records are lost, damaged, or never reconciled, owners cannot answer basic questions: “How much cash do I have today?”, “Who owes me money?”, “What did I spend last month?”
+Small business owners in Cameroon and across Africa keep ledgers on paper, in spreadsheets, or in their heads. When records are lost, damaged, or never reconciled, owners cannot answer basic questions: “How much cash do I have today?”, “Who owes me money?”, “What did I spend last month?”, “Am I profitable?”.
 
 LedgerMate converts natural-language transaction descriptions into structured, validated ledger entries — entirely on-device, with no internet, no cloud fees, and no subscription.
 
 ## What it does
 
-- Converts natural-language input into structured bookkeeping entries.
-- Validates every transaction with a deterministic Python Decimal engine.
-- Stores records in SQLite with an append-only audit log.
-- Exports to CSV and JSON.
-- Runs 100% offline using a local GGUF model via llama.cpp.
+- Natural-language transaction entry with mandatory confirmation.
+- Deterministic financial calculations using Python Decimal.
+- Local AI assistant for business questions, summaries, and insights.
+- Dashboard with real KPIs, charts, and business health.
+- Invoicing, customers, products, trash/recycle bin, and reports.
+- CSV/JSON export; offline PDF-ready report structure.
+- 100% offline local inference via llama.cpp + GGUF.
 
 ## Example
 
 ```
-You: Yesterday I bought 15 bags of feed for 180,000 XAF from a supplier in Bamenda. I paid 80,000 XAF cash and owe the remaining 100,000 XAF.
+You: I bought fish for 3000 XAF and tomato for 500.
 
-LedgerMate extracts:
-- date: 2026-08-19
+LedgerMate:
 - type: expense
-- category: inventory/feed
-- amount: 180000 XAF
-- payment_method: cash + payable
-- counterparty: Bamenda supplier
-- notes: partial payment; 100000 XAF outstanding
+- amount: 3,500 XAF
+- description: Fish and tomatoes
+- category: Food
 ```
 
 ## Why this matters for Africa
@@ -43,7 +42,7 @@ LedgerMate extracts:
 ## Architecture
 
 ```
-Natural language → LLM extraction → Validation layer → Python Decimal engine → SQLite → Export
+Natural language → LLM extraction → Validation layer → Python Decimal engine → SQLite → Dashboard/Reports/AI
 ```
 
 The LLM interprets intent. The deterministic engine owns arithmetic and ledger integrity.
@@ -65,15 +64,16 @@ The LLM interprets intent. The deterministic engine owns arithmetic and ledger i
 
 ## Quick start
 
-```bash
-# 1. Download model weights
-bash download_model.sh
+```powershell
+# 1. Activate Python 3.12 environment
+.\.venv312\Scripts\Activate.ps1
 
-# 2. Install dependencies
-pip install -r requirements.txt
+# 2. Verify setup and tests
+python verify_setup.py
 
-# 3. Run the CLI
-py src/ledgermate/cli.py
+# 3. Start the offline web dashboard
+python src\ledgermate\api.py
+# Then open http://127.0.0.1:8000
 ```
 
 ## Model license
@@ -86,4 +86,4 @@ MIT License
 
 ## Status
 
-LedgerMate V2 — unified release with provider-neutral architecture, voice workflow, and verified ADTC 2026 compliance.
+LedgerMate — premium offline business intelligence with dashboard, AI assistant, invoicing, customers, products, trash/recycle bin, reports, exports, and verified ADTC 2026 compliance.
