@@ -7,25 +7,23 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import socket
-from ledgermate.api import _port_in_use, _safe_default_port
+from ledgermate.api import _can_bind, _safe_default_port
 
 
 def test_can_bind_reflects_real_bind_state():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(("127.0.0.1", 0))
     port = s.getsockname()[1]
     s.listen(1)
     try:
-        assert _port_in_use("127.0.0.1", port) is True
+        assert _can_bind("127.0.0.1", port) is False
     finally:
         s.close()
-    assert _port_in_use("127.0.0.1", port) is False
+    assert _can_bind("127.0.0.1", port) is True
 
 
 def test_safe_default_port_uses_preferred_when_available():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(("127.0.0.1", 0))
     port = s.getsockname()[1]
     s.close()
@@ -36,7 +34,6 @@ def test_safe_default_port_uses_preferred_when_available():
 
 def test_safe_default_port_falls_back_when_preferred_is_occupied():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(("127.0.0.1", 0))
     port = s.getsockname()[1]
     s.listen(1)

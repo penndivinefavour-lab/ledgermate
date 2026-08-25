@@ -624,7 +624,6 @@ def _port_in_use(host: str, port: int) -> bool:
 
 def _can_bind(host: str, port: int) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             sock.bind((host, port))
             return True
@@ -670,7 +669,7 @@ def _is_ledgermate_health(host: str, port: int) -> bool:
 
 
 def _safe_default_port(host: str, preferred_port: int) -> tuple[str, int]:
-    if not _port_in_use(host, preferred_port) and _can_bind(host, preferred_port):
+    if _can_bind(host, preferred_port):
         return host, preferred_port
     owner = _owner_process(preferred_port)
     ledgermate_running = bool(owner and _is_ledgermate_health(host, preferred_port))
