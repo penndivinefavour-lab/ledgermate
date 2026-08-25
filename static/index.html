@@ -536,6 +536,10 @@
       return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
+    function timeAgo() {
+      return 'just now';
+    }
+
     let appSettings = { currency: 'XAF', language: 'en', profile: {} };
 
     const i18n = {
@@ -770,12 +774,12 @@
           </div>`;
       }
 
-      const cats = Object.entries(Object.fromEntries(catMap)).sort((a,b)=>b[1]-a[1]);
-      if (!cats.length) {
+      const expenseEntries = Object.entries(Object.fromEntries(catMap)).sort((a,b)=>b[1]-a[1]);
+      if (!expenseEntries.length) {
         breakdown.innerHTML = '<div class="empty">No expense data available.</div>';
       } else {
-        const total = cats.reduce((s, [,v]) => s + v, 0) || 1;
-        breakdown.innerHTML = cats.map(([k,v]) => {
+        const total = expenseEntries.reduce((s, [,v]) => s + v, 0) || 1;
+        breakdown.innerHTML = expenseEntries.map(([k,v]) => {
           const pct = ((v/total)*100).toFixed(1);
           return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f1f5f9;">
             <div style="flex:1;height:8px;background:#f1f5f9;border-radius:999px;overflow:hidden;">
@@ -888,7 +892,9 @@
 
     async function refreshReports() {
       try {
-        const [dash, txns, cats] = await Promise.all([ api(`${API_BASE}/dashboard?period=${document.getElementById('period').value}`), api(`${API_BASE}/transactions`), api(`${API_BASE}/analytics/categories?period=${document.getElementById('period').value}`) ]);
+        const periodEl = document.getElementById('period');
+        const period = periodEl ? periodEl.value : 'all';
+        const [dash, txns, cats] = await Promise.all([ api(`${API_BASE}/dashboard?period=${period}`), api(`${API_BASE}/transactions`), api(`${API_BASE}/analytics/categories?period=${period}`) ]);
         renderReports(dash, txns, cats);
       } catch { toast('Failed to refresh reports'); }
     }
