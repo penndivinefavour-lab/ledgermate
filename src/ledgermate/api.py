@@ -384,7 +384,8 @@ def assistant_query(input_data: AssistantQuery) -> dict[str, Any]:
     try:
         context = f"Business: {settings.profile.business_name or 'Not configured'}. Currency: {settings.current_currency()}."
         prompt = f"{context}\nQuestion: {input_data.question}\nAnswer briefly and clearly for a small business owner."
-        answer = run_llama(prompt, max_tokens=256)
+        raw_answer = run_llama(prompt, max_tokens=256)
+        answer = _sanitize_assistant_answer(input_data.question, raw_answer)
         return {"answer": answer.strip(), "type": "ai", "data": {}}
     except Exception as exc:
         return {"answer": "I couldn't process that question. Try asking about your balance, expenses, or business summary.", "type": "error", "data": {}}
@@ -656,6 +657,21 @@ def _owner_process(port: int) -> dict | None:
         except Exception:
             pass
     return info
+
+
+def _sanitize_assistant_answer(question: str, raw: str) -> str:
+    text = _sanitize_llama_output(raw)
+    lowered_question = question.strip().lower()
+    for line in text.splitlines():
+        candidate = line.strip()
+        if not candidate:
+            continue
+        if candidate.lower().startswith("question:"):
+            continue
+        if lowered_question and lowered_question in candidate.lower():
+            continue
+        return candidate
+    return text.strip()
 
 
 def _is_ledgermate_health(host: str, port: int) -> bool:
