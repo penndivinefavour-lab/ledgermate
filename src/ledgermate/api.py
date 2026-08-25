@@ -390,10 +390,6 @@ def assistant_query(input_data: AssistantQuery) -> dict[str, Any]:
         return {"answer": "I couldn't process that question. Try asking about your balance, expenses, or business summary.", "type": "error", "data": {}}
 
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
-
-
 from ledgermate.ledger import Ledger as _Ledger
 
 def _get_ledger() -> _Ledger:

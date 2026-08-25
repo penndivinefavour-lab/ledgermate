@@ -71,18 +71,18 @@ The LLM interprets intent. The deterministic engine owns arithmetic and ledger i
 # 2. Verify setup and tests
 python verify_setup.py
 
-# 3. Preferred: use the Windows launcher
-.\run_ledgerMate.ps1
-
-# 3-alt. Start directly
-python src\ledgermate\api.py
+# 3. Start the offline web dashboard
+python run_server.py
 # Then open http://127.0.0.1:8000
 ```
 
 ### Launcher behavior
+- Uses `run_server.py` as the primary startup path.
 - Detects an existing LedgerMate instance on port 8000 and opens it instead of starting a second instance.
 - If another unrelated app owns port 8000, prints owner diagnostics and avoids a hard WinError 10048 crash.
-- Supports `.\run_ledgerMate.ps1 -Stop` and `.\run_ledgerMate.ps1 -Restart`.
+- Supports `.\\run_ledgerMate.ps1 -Stop` and `.\\run_ledgerMate.ps1 -Restart`.
+
+> Note: direct `python src\ledgermate\api.py` startup is not the supported path on Windows because the launcher provides the required port guard. Use `python run_server.py` instead.
 
 ### Environment variables
 - `LEDGERMATE_HOST` — bind host, default `127.0.0.1`
