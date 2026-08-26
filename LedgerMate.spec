@@ -1,19 +1,28 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_all, collect_dynamic_libs
+
 block_cipher = None
+
+_websockets_datas, _websockets_binaries, _websockets_hidden = collect_all('websockets')
 
 a = Analysis(
     ['ledgermate_desktop.py'],
-    pathex=[],
-    binaries=[],
+    pathex=['src'],
+    binaries=[
+        ('C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python312\\DLLs\\_sqlite3.pyd', 'DLLs'),
+        ('C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python312\\DLLs\\sqlite3.dll', 'DLLs'),
+    ] + collect_dynamic_libs('sqlite3'),
     datas=[
         ('static', 'static'),
-        ('src/ledgermate', 'src/ledgermate'),
+        ('src/ledgermate', 'ledgermate'),
         ('model', 'model'),
         ('docs', 'docs'),
         ('README.md', '.'),
+        *_websockets_datas,
     ],
     hiddenimports=[
+        'ledgermate',
         'ledgermate.api',
         'ledgermate.ledger',
         'ledgermate.llm',
@@ -28,7 +37,11 @@ a = Analysis(
         'fastapi',
         'fastapi.middleware.cors',
         'fastapi.staticfiles',
+        'starlette',
+        'anyio',
         'pydantic',
+        'websockets',
+        *_websockets_hidden,
         'dotenv',
         'rich',
         'sounddevice',
@@ -49,7 +62,7 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
+    a.binaries + _websockets_binaries,
     a.zipfiles,
     a.datas,
     [],
@@ -60,7 +73,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,
+    console=True,
     disable_windowed_traceback=False,
     target_arch=None,
     codesign_identity=None,

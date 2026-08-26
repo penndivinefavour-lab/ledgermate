@@ -37,10 +37,19 @@ app.add_middleware(
 )
 
 STATIC_DIR = Path(__file__).resolve().parents[2] / "static"
+if not STATIC_DIR.exists() and getattr(sys, "frozen", False):
+    STATIC_DIR = Path(sys._MEIPASS) / "static"
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 DB_PATH = Path(__file__).resolve().parents[2] / "data" / "ledger.db"
+if getattr(sys, "frozen", False):
+    exe_project_db = Path(sys.executable).resolve().parent.parent / "data" / "ledger.db"
+    if exe_project_db.exists():
+        DB_PATH = exe_project_db
+    else:
+        DB_PATH = Path.cwd() / "data" / "ledger.db"
+DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
 def get_ledger() -> Ledger:
@@ -66,6 +75,7 @@ class NaturalLanguageInput(BaseModel):
 
 class AssistantQuery(BaseModel):
     question: str
+    conversation_id: str | None = None
 
 
 @app.get("/api/health")
@@ -334,61 +344,120 @@ def export_json(start_date: str | None = None, end_date: str | None = None) -> F
 @app.post("/api/assistant")
 def assistant_query(input_data: AssistantQuery) -> dict[str, Any]:
     ledger = get_ledger()
-    q = input_data.question.lower().strip()
-    
-    if any(word in q for word in ["balance", "how much", "spent", "made", "profit", "income", "expense"]):
-        rows = ledger.list_transactions()
-        income = sum(Decimal(str(r.get("amount", "0"))) for r in rows if r.get("type") == "income")
-        expense = sum(Decimal(str(r.get("amount", "0"))) for r in rows if r.get("type") == "expense")
-        profit = income - expense
-        answer = f"Your business has {len(rows)} transactions. Income: {income:,.0f} {settings.current_currency()}, Expenses: {expense:,.0f} {settings.current_currency()}, Net: {profit:,.0f} {settings.current_currency()}."
+    q = input_data.question.strip()
+    lowered = q.lower()
+    conversation_id = input_data.conversation_id
+    history = []
+    if conversation_id:
+        try:
+            hist_path = Path(__file__).resolve().parents[2] / "data" / "conversations" / f"{conversation_id}.json"
+            if hist_path.exists():
+                data = json.loads(hist_path.read_text(encoding="utf-8"))
+                history = data.get("messages", [])[-10:]
+        except Exception:
+            history = []
+
+    context_lines = []
+    if history:
+        context_lines.append("Recent conversation:")
+        for msg in history:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            context_lines.append(f"- {role}: {content}")
+    context_text = "\n".join(context_lines[-6:])
+
+    business_profile = settings.profile.to_dict() if hasattr(settings.profile, "to_dict") else {}
+    business_name = business_profile.get("business_name") or "your business"
+    currency = settings.current_currency()
+    rows = ledger.list_transactions()
+    income = sum(Decimal(str(r.get("amount", "0"))) for r in rows if r.get("type") == "income")
+    expense = sum(Decimal(str(r.get("amount", "0"))) for r in rows if r.get("type") == "expense")
+    profit = income - expense
+    expense_by_cat: dict[str, Decimal] = {}
+    for r in rows:
+        if r.get("type") == "expense":
+            amt = Decimal(str(r.get("amount", "0")))
+            cat = r.get("category", "general")
+            expense_by_cat[cat] = expense_by_cat.get(cat, Decimal("0")) + amt
+    top_expense_category = max(expense_by_cat, key=expense_by_cat.get) if expense_by_cat else None
+    top_expense_amount = expense_by_cat.get(top_expense_category, Decimal("0")) if top_expense_category else Decimal("0")
+
+    def analytics_answer(text: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        return {"answer": text, "type": "analytics", "data": payload or {}, "conversation_id": conversation_id}
+
+    if any(word in lowered for word in ["total expenses", "expenses", "spent", "how much"]):
+        answer = f"Your business has {len(rows)} transactions. Income: {income:,.0f} {currency}, Expenses: {expense:,.0f} {currency}, Net: {profit:,.0f} {currency}."
         if profit > 0:
             answer += " You are profitable."
         elif profit < 0:
             answer += " You are operating at a loss."
         else:
             answer += " You are breaking even."
-        return {"answer": answer, "type": "analytics", "data": {"income": str(income), "expense": str(expense), "profit": str(profit)}}
-    
-    if any(word in q for word in ["biggest", "largest", "most", "top", "spend"]):
-        rows = ledger.list_transactions()
-        expense_by_cat: dict[str, Decimal] = {}
-        for r in rows:
-            if r.get("type") == "expense":
-                amt = Decimal(str(r.get("amount", "0")))
-                cat = r.get("category", "general")
-                expense_by_cat[cat] = expense_by_cat.get(cat, Decimal("0")) + amt
-        if expense_by_cat:
-            top = max(expense_by_cat, key=expense_by_cat.get)
-            return {"answer": f"Your biggest expense category is {top} at {expense_by_cat[top]:,.0f} {settings.current_currency()}.", "type": "analytics", "data": {"top_category": top, "amount": str(expense_by_cat[top])}}
-        return {"answer": "No expense data available yet.", "type": "analytics", "data": {}}
-    
-    if any(word in q for word in ["summary", "how is", "doing", "overview", "recommend"]):
-        rows = ledger.list_transactions()
-        income = sum(Decimal(str(r.get("amount", "0"))) for r in rows if r.get("type") == "income")
-        expense = sum(Decimal(str(r.get("amount", "0"))) for r in rows if r.get("type") == "expense")
-        profit = income - expense
-        answer = f"Your business recorded {income:,.0f} {settings.current_currency()} in income and {expense:,.0f} {settings.current_currency()} in expenses, leaving a net of {profit:,.0f} {settings.current_currency()}. "
-        if len(rows) < 5:
-            answer += "Not enough historical data to establish trends. Keep recording transactions for better insights."
-        else:
-            answer += "Keep tracking your expenses to identify savings opportunities."
-        return {"answer": answer, "type": "summary", "data": {"income": str(income), "expense": str(expense), "profit": str(profit)}}
+        return analytics_answer(answer, {"income": str(income), "expense": str(expense), "profit": str(profit)})
 
-    if "business name" in q or "my name" in q:
-        name = settings.profile.business_name or settings.profile.owner_name
+    if any(word in lowered for word in ["top expense", "biggest expense", "largest expense", "most spend"]):
+        if top_expense_category:
+            return analytics_answer(f"Your biggest expense category is {top_expense_category} at {top_expense_amount:,.0f} {currency}.", {"top_category": top_expense_category, "amount": str(top_expense_amount)})
+        return analytics_answer("No expense data available yet.")
+
+    if any(word in lowered for word in ["recent transaction", "last transaction", "latest transaction"]):
+        recent = next(iter(sorted([r for r in rows if r.get("amount")], key=lambda x: x.get("date", ""), reverse=True)[:1]), None)
+        if recent:
+            return analytics_answer(f"Your most recent transaction is {recent.get('description', 'an unnamed transaction')} for {recent.get('amount', '0')} {currency} on {recent.get('date', '')}.")
+        return analytics_answer("No transactions found yet.")
+
+    if any(word in lowered for word in ["summary", "how is", "overview", "performance"]):
+        answer = f"{business_name} recorded {income:,.0f} {currency} in income and {expense:,.0f} {currency} in expenses, leaving a net of {profit:,.0f} {currency}. "
+        if len(rows) < 5:
+            answer += "Not enough history to see clear trends yet."
+        else:
+            answer += "Keep tracking to identify savings opportunities."
+        return analytics_answer(answer, {"income": str(income), "expense": str(expense), "profit": str(profit)})
+
+    if any(word in lowered for word in ["cash flow", "improve cash", "cash"]):
+        advice = []
+        if expense > income:
+            advice.append("Your expenses currently exceed income. Review recurring costs and delay non-essential spending.")
+        if top_expense_category:
+            advice.append(f"Your top expense category is {top_expense_category}; look for cheaper suppliers or reduce volume there first.")
+        advice.append("Send invoices faster, follow up on late payments, and keep a small cash buffer.")
+        return {"answer": " ".join(advice) or "Keep monitoring income and expenses to improve cash flow.", "type": "advice", "data": {}, "conversation_id": conversation_id}
+
+    if any(word in lowered for word in ["proposal", "pitch", "customer proposal"]):
+        return {"answer": f"Proposal draft for {business_name}: we deliver reliable value with clear pricing, timelines, and measurable outcomes. Include your strongest results, package terms in {currency}, and make next steps easy to accept.", "type": "advice", "data": {}, "conversation_id": conversation_id}
+
+    if any(word in lowered for word in ["revenue", "increase revenue", "grow"]):
+        return {"answer": "Increase revenue by focusing on your best-selling category, raising prices slightly for high-value work, offering small add-ons, and asking satisfied customers for referrals.", "type": "advice", "data": {}, "conversation_id": conversation_id}
+
+    if any(word in lowered for word in ["risk", "risks", "watch"]):
+        return {"answer": f"Watch these risks: overspending in {top_expense_category or 'any category' if expense_by_cat else 'untracked areas'}, late customer payments, cash gaps between spending and income, and unclear pricing. Track them early.", "type": "advice", "data": {}, "conversation_id": conversation_id}
+
+    if any(word in lowered for word in ["hi", "hello", "how are you", "who are you"]):
+        return {"answer": "I'm your offline LedgerMate Business Copilot. Ask me about your expenses, income, cash flow, proposals, or general business advice.", "type": "conversation", "data": {}, "conversation_id": conversation_id}
+
+    if "business name" in lowered or "my name" in lowered:
+        name = business_profile.get("business_name") or business_profile.get("owner_name")
         if name:
-            return {"answer": f"Your configured business name is: {name}", "type": "business_context", "data": {"business_name": name}}
-        return {"answer": "I don't have your business name yet. Please add it in Settings → Business Profile.", "type": "business_context", "data": {}}
+            return {"answer": f"Your configured business name is: {name}", "type": "business_context", "data": {"business_name": name}, "conversation_id": conversation_id}
+        return {"answer": "I don't have your business name yet. Please add it in Settings → Business Profile.", "type": "business_context", "data": {}, "conversation_id": conversation_id}
 
     try:
-        context = f"Business: {settings.profile.business_name or 'Not configured'}. Currency: {settings.current_currency()}."
-        prompt = f"{context}\nQuestion: {input_data.question}\nAnswer briefly and clearly for a small business owner."
+        prompt = "\n".join(
+            [
+                "You are LedgerMate Business Copilot.",
+                f"Business: {business_name}. Currency: {currency}.",
+                f"Current data - Income: {income:,.0f} {currency}, Expenses: {expense:,.0f} {currency}, Net: {profit:,.0f} {currency}.",
+                f"Top expense: {top_expense_category or 'None'} at {top_expense_amount:,.0f} {currency}." if top_expense_category else "",
+                context_text,
+                f"User: {q}",
+                "Answer briefly and clearly. Do not invent financial figures. If unknown, say so.",
+            ]
+        ).strip()
         raw_answer = run_llama(prompt, max_tokens=256)
-        answer = _sanitize_assistant_answer(input_data.question, raw_answer)
-        return {"answer": answer.strip(), "type": "ai", "data": {}}
-    except Exception as exc:
-        return {"answer": "I couldn't process that question. Try asking about your balance, expenses, or business summary.", "type": "error", "data": {}}
+        answer = _sanitize_assistant_answer(q, raw_answer)
+        return {"answer": answer.strip(), "type": "ai", "data": {}, "conversation_id": conversation_id}
+    except Exception:
+        return {"answer": "I couldn't process that. Try asking about your expenses, income, cash flow, or business summary.", "type": "error", "data": {}, "conversation_id": conversation_id}
 
 
 from ledgermate.ledger import Ledger as _Ledger

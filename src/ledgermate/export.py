@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any, Iterable
 
+from fpdf import FPDF
+
 
 def export_csv(transactions: Iterable[dict], path: str | Path) -> Path:
     rows = list(transactions)
@@ -46,25 +48,38 @@ def export_invoice_pdf(invoice: dict[str, Any], path: str | Path, *, profile: di
     out.parent.mkdir(parents=True, exist_ok=True)
     title = (profile or {}).get("business_name") or "LedgerMate"
     customer = invoice.get("customer_name", "Customer")
-    lines = [
-        f"{title}",
-        f"Invoice: {invoice.get('invoice_id', '')}",
-        f"Customer: {customer}",
-        f"Date: {invoice.get('created_at', invoice.get('date', ''))}",
-        f"Status: {invoice.get('status', 'draft')}",
-        "",
-        "Items:",
-    ]
-    for item in invoice.get("items", []):
-        lines.append(f"- {item.get('name', 'Item')} x{item.get('quantity', 1)} @ {item.get('unit_price', 0)} {currency} = {item.get('total', item.get('unit_price', 0))} {currency}")
-    lines += [
-        "",
-        f"Subtotal: {invoice.get('subtotal', 0)} {currency}",
-        f"Tax: {invoice.get('tax', 0)} {currency}",
-        f"Discount: {invoice.get('discount', 0)} {currency}",
-        f"Total: {invoice.get('total', 0)} {currency}",
-    ]
-    out.write_text("\n".join(lines), encoding="utf-8")
+    items = invoice.get("items", [])
+
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(0, 10, title, ln=True)
+    pdf.set_font("Helvetica", "", 12)
+    pdf.cell(0, 8, f"Invoice: {invoice.get('invoice_id', '')}", ln=True)
+    pdf.cell(0, 8, f"Customer: {customer}", ln=True)
+    pdf.cell(0, 8, f"Date: {invoice.get('created_at', invoice.get('date', ''))}", ln=True)
+    pdf.cell(0, 8, f"Status: {invoice.get('status', 'draft')}", ln=True)
+    pdf.ln(6)
+
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, "Items:", ln=True)
+    pdf.set_font("Helvetica", "", 12)
+    for item in items:
+        name = item.get("name", "Item")
+        quantity = item.get("quantity", 1)
+        unit_price = item.get("unit_price", 0)
+        total = item.get("total", unit_price)
+        pdf.cell(0, 8, f"- {name} x{quantity} @ {unit_price} {currency} = {total} {currency}", ln=True)
+
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, f"Subtotal: {invoice.get('subtotal', 0)} {currency}", ln=True)
+    pdf.cell(0, 8, f"Tax: {invoice.get('tax', 0)} {currency}", ln=True)
+    pdf.cell(0, 8, f"Discount: {invoice.get('discount', 0)} {currency}", ln=True)
+    pdf.cell(0, 8, f"Total: {invoice.get('total', 0)} {currency}", ln=True)
+
+    pdf.output(str(out))
     return out
 
 

@@ -347,26 +347,32 @@
 
         <!-- AI Assistant -->
         <div id="page-assistant" class="page">
-          <div class="card" style="height:calc(100vh - 110px);display:flex;flex-direction:column;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-              <h3>LedgerMate AI</h3>
-              <button class="btn btn-secondary btn-sm" onclick="clearChat()">Clear</button>
+          <div class="card" style="height:calc(100vh - 110px);display:flex;flex-direction:row;gap:12px;overflow:hidden;">
+            <div style="width:220px;display:flex;flex-direction:column;gap:8px;border-right:1px solid #e5e7eb;padding-right:10px;overflow:auto;">
+              <button class="btn btn-primary btn-sm" onclick="createConversation()">New Chat</button>
+              <div id="conversation-list"></div>
             </div>
-            <div class="chat-history" id="chat-history">
-              <div class="bubble assistant">
-                <div>Hello! I'm your offline business assistant. Ask me about your business, expenses, profit, or anything finance-related.</div>
-                <div class="meta">LedgerMate • just now</div>
+            <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <h3>Business Copilot</h3>
+                <button class="btn btn-secondary btn-sm" onclick="clearCurrentConversation()">Clear</button>
               </div>
-            </div>
-            <div class="chips" id="quick-chips">
-              <button class="chip" onclick="quickAsk('How is my business doing?')">How is my business doing?</button>
-              <button class="chip" onclick="quickAsk('What are my biggest expenses?')">Biggest expenses</button>
-              <button class="chip" onclick="quickAsk('Am I profitable?')">Am I profitable?</button>
-              <button class="chip" onclick="quickAsk('Give me a summary')">Give me a summary</button>
-            </div>
-            <div class="composer">
-              <input id="assistant-input" class="input" placeholder="Ask LedgerMate about your business..." />
-              <button class="btn btn-primary" onclick="askAssistant()">Send</button>
+              <div class="chat-history" id="chat-history">
+                <div class="bubble assistant">
+                  <div>Hello! I'm your offline business copilot. Ask me about your expenses, income, cash flow, proposals, or general business advice.</div>
+                  <div class="meta">LedgerMate • just now</div>
+                </div>
+              </div>
+              <div class="chips" id="quick-chips">
+                <button class="chip" onclick="quickAsk('How is my business doing?')">How is my business doing?</button>
+                <button class="chip" onclick="quickAsk('What are my biggest expenses?')">Biggest expenses</button>
+                <button class="chip" onclick="quickAsk('Am I profitable?')">Am I profitable?</button>
+                <button class="chip" onclick="quickAsk('Give me a summary')">Give me a summary</button>
+              </div>
+              <div class="composer">
+                <input id="assistant-input" class="input" placeholder="Ask LedgerMate about your business..." />
+                <button class="btn btn-primary" onclick="askAssistant()">Send</button>
+              </div>
             </div>
           </div>
         </div>
@@ -540,7 +546,47 @@
       return 'just now';
     }
 
-    let appSettings = { currency: 'XAF', language: 'en', profile: {} };
+    async function loadConversations() {
+      const list = await api(`${API_BASE}/conversations`);
+      const container = document.getElementById('conversation-list');
+      if (!container) return;
+      container.innerHTML = list.length ? list.map(c => `<button class="btn btn-secondary btn-sm" style="width:100%;text-align:left;margin-bottom:6px;" onclick="openConversation('${c.id}')">${escapeHtml(c.title || 'Conversation')}</button>`).join('') : '<div class="empty" style="font-size:12px;">No conversations yet.</div>';
+    }
+
+    async function createConversation() {
+      const res = await api(`${API_BASE}/conversations`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: 'New Chat' }) });
+      appSettings.conversationId = res.id || res.conversation_id;
+      await loadConversations();
+      const history = document.getElementById('chat-history');
+      history.innerHTML = '<div class="bubble assistant"><div>Hello! I\'m your offline business copilot. Ask me about your expenses, income, cash flow, proposals, or general business advice.</div><div class="meta">LedgerMate • just now</div></div>';
+    }
+
+    async function openConversation(convId) {
+      appSettings.conversationId = convId;
+      const res = await api(`${API_BASE}/conversations/${encodeURIComponent(convId)}`);
+      const history = document.getElementById('chat-history');
+      const messages = res.messages || [];
+      history.innerHTML = messages.map(m => `<div class="bubble ${m.role}"><div>${escapeHtml(m.content)}<div class="meta">${m.role === 'user' ? 'You' : 'LedgerMate'} • ${timeAgo()}</div></div>`).join('') || '<div class="bubble assistant"><div>No messages yet.</div><div class="meta">LedgerMate • just now</div></div>';
+    }
+
+    async function deleteCurrentConversation() {
+      const convId = appSettings.conversationId;
+      if (!convId) return;
+      await api(`${API_BASE}/conversations/${encodeURIComponent(convId)}`, { method: 'DELETE' });
+      appSettings.conversationId = null;
+      await loadConversations();
+      document.getElementById('chat-history').innerHTML = '<div class="bubble assistant"><div>Conversation deleted. Start a new chat.</div><div class="meta">LedgerMate • just now</div></div>';
+    }
+
+    function clearCurrentConversation() {
+      if (!appSettings.conversationId) {
+        document.getElementById('chat-history').innerHTML = '<div class="bubble assistant"><div>Conversation cleared. How can I help?</div><div class="meta">LedgerMate • just now</div></div>';
+        return;
+      }
+      deleteCurrentConversation();
+    }
+
+    let appSettings = { currency: 'XAF', language: 'en', profile: {}, conversationId: null };
 
     const i18n = {
       en: {
@@ -838,6 +884,10 @@
       const input = document.getElementById('assistant-input');
       const q = input.value.trim();
       if (!q) return;
+      if (!appSettings.conversationId) {
+        try { await createConversation(); } catch (e) { console.error('Failed to create conversation', e); }
+      }
+      const convId = appSettings.conversationId;
       const history = document.getElementById('chat-history');
       history.innerHTML += `<div class="bubble user"><div>${escapeHtml(q)}<div class="meta">You • ${timeAgo()}</div></div>`;
       input.value = '';
@@ -847,11 +897,11 @@
       history.appendChild(thinking);
       history.scrollTop = history.scrollHeight;
       try {
-        const res = await api(`${API_BASE}/assistant`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: q }) });
+        const res = await api(`${API_BASE}/assistant`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: q, conversation_id: convId }) });
         thinking.innerHTML = `<div>${escapeHtml(res.answer)}<div class="meta">LedgerMate • ${timeAgo()}</div></div>`;
-        const convId = appSettings.conversationId;
         if (convId) await api(`${API_BASE}/conversations/${encodeURIComponent(convId)}/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'user', content: q }) });
         if (convId) await api(`${API_BASE}/conversations/${encodeURIComponent(convId)}/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'assistant', content: res.answer }) });
+        await loadConversations();
       } catch (err) {
         thinking.innerHTML = `<div class="error">Sorry, I couldn't process that.</div>`;
       }
@@ -1049,6 +1099,7 @@
       customers: renderCustomers,
       products: renderProducts,
       trash: renderTrash,
+      assistant: loadConversations,
     };
 
     const originalShowPage = showPage;

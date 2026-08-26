@@ -2,7 +2,7 @@
   "schema_version": "1.1.0",
   "profiler_version": "adtc-profiler 0.1.0",
   "submission": {
-    "team_id": "1146006-ledgermate-offline-sme-bookkeeping-assistant",
+    "team_id": "XMcBMFzoJr63LJ5lsa0AjQ",
     "domain": "corporate_enterprise",
     "language_scope": [
       "en"
@@ -45,24 +45,24 @@
     "os": "Ubuntu 22.04.5 LTS"
   },
   "throughput": {
-    "tokens_per_second_generation": 17.12,
-    "first_token_latency_ms": 6185.84,
+    "tokens_per_second_generation": 15.95,
+    "first_token_latency_ms": 6559.4,
     "prompt_tokens": 512,
     "generated_tokens": 128
   },
   "memory": {
-    "peak_rss_mb": 1379.02,
-    "steady_state_rss_mb": 1303.31,
+    "peak_rss_mb": 1378.99,
+    "steady_state_rss_mb": 1282.59,
     "peak_vms_mb": 1777.82
   },
   "accuracy": [],
   "cpu_thermal": {
-    "cpu_percent_p99": 54.7,
+    "cpu_percent_p99": 50.7,
     "core_temp_c_peak": null,
     "throttled": false
   },
   "reproducibility": {
-    "git_commit_sha": "78d93cb3542ea74ace0abe7723bfe3d1f39ec44e",
+    "git_commit_sha": "856aaf195b92",
     "docker_image_digest": "unknown",
     "random_seed": 42
   },
