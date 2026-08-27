@@ -10,7 +10,7 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-MODEL_PATH = Path(__file__).resolve().parents[2] / "model" / "llama-3.2-1b-instruct-q4_k_m.gguf"
+MODEL_PATH = Path(__file__).resolve().parent.parent.parent / "model" / "llama-3.2-1b-instruct-q4_k_m.gguf"
 
 
 def _validate_llama_executable(path: str) -> str:
@@ -40,6 +40,11 @@ def _find_llama_executable() -> str:
         "llama-server",
         "llama-server.exe",
     ]
+    cli_candidates = candidates[:2]
+    for name in cli_candidates:
+        path = shutil.which(name)
+        if path:
+            return _validate_llama_executable(path)
     for name in candidates:
         path = shutil.which(name)
         if path:
@@ -48,7 +53,7 @@ def _find_llama_executable() -> str:
     if winget_dir.exists():
         for package_dir in winget_dir.iterdir():
             if "llamacpp" in package_dir.name.lower() or "ggml" in package_dir.name.lower():
-                for exe_name in ["llama-cli.exe", "llama-server.exe", "llama-cli", "llama-server"]:
+                for exe_name in ["llama-cli.exe", "llama-cli", "llama-server.exe", "llama-server"]:
                     candidate = package_dir / exe_name
                     if candidate.exists() and candidate.is_file():
                         return _validate_llama_executable(str(candidate))
@@ -58,13 +63,22 @@ def _find_llama_executable() -> str:
 
 
 def run_llama(prompt: str, *, n_ctx: int = 1024, threads: int = 4, temperature: float = 0.0, max_tokens: int = 256) -> str:
-    exe = _find_llama_executable()
+    env_path = os.environ.get("LLAMA_CLI_PATH")
+    if env_path and Path(env_path).exists():
+        exe = str(Path(env_path).resolve())
+    else:
+        preferred = Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Packages" / "ggml.llamacpp_Microsoft.Winget.Source_8wekyb3d8bbwe" / "llama-cli.exe"
+        if preferred.exists():
+            exe = str(preferred.resolve())
+        else:
+            exe = _find_llama_executable()
+    safe_prompt = prompt.replace("\r", " ").replace("\n", " ")
     cmd = [
         exe,
         "-m",
         str(MODEL_PATH),
         "-p",
-        prompt,
+        safe_prompt,
         "-n",
         str(max_tokens),
         "-c",
@@ -76,13 +90,22 @@ def run_llama(prompt: str, *, n_ctx: int = 1024, threads: int = 4, temperature: 
         "-ngl",
         "0",
         "--log-disable",
-        "-st",
     ]
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True, stdin=subprocess.PIPE)
-    except subprocess.CalledProcessError as exc:
-        raise RuntimeError(f"llama.cpp failed: {exc.stderr}") from exc
-    return _sanitize_llama_output(result.stdout)
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        stdout_path = Path(tmp) / "stdout.txt"
+        stderr_path = Path(tmp) / "stderr.txt"
+        try:
+            with stdout_path.open("w", encoding="utf-8") as fout, stderr_path.open("w", encoding="utf-8") as ferr:
+                result = subprocess.run(cmd, stdout=fout, stderr=ferr, text=True, check=True, stdin=subprocess.DEVNULL, timeout=600)
+            stdout = stdout_path.read_text(encoding="utf-8", errors="replace")
+            return _sanitize_llama_output(stdout)
+        except subprocess.CalledProcessError as exc:
+            stderr = stderr_path.read_text(encoding="utf-8", errors="replace") if stderr_path.exists() else ""
+            msg = f"llama.cpp failed: cmd={cmd!r} rc={exc.returncode} stderr={stderr[:500]!r}"
+            raise RuntimeError(msg) from exc
+        except Exception as exc2:
+            raise RuntimeError(f"llama.cpp failed: cmd={cmd!r} error={exc2}") from exc2
 
 
 def _sanitize_llama_output(raw: str) -> str:

@@ -141,20 +141,31 @@ def _wait_for_health() -> bool:
 
 
 def main() -> int:
-    if _wait_for_health():
-        _log("Existing LedgerMate instance detected on port 8000.")
-    else:
+    server_thread = None
+    if not _wait_for_health():
         _log("No existing instance. Starting backend...")
         server_thread = threading.Thread(target=_start_backend, daemon=True)
         server_thread.start()
-        if not _wait_for_health():
+        for _ in range(40):
+            if _wait_for_health():
+                break
+            time.sleep(0.25)
+        else:
             print("LedgerMate could not start. Your business data has not been modified.")
             return 1
+    else:
+        _log("Existing LedgerMate instance detected on port 8000.")
 
     webbrowser.open(FRONTEND_URL)
     print(f"LedgerMate running at {FRONTEND_URL}")
-    while _wait_for_health():
-        time.sleep(5)
+    try:
+        while True:
+            if not _wait_for_health():
+                print("LedgerMate health lost. Restarting backend...")
+                _start_backend()
+            time.sleep(5)
+    except KeyboardInterrupt:
+        print("Shutting down LedgerMate...")
     return 0
 
 

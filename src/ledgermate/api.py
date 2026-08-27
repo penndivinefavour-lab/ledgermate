@@ -414,33 +414,6 @@ def assistant_query(input_data: AssistantQuery) -> dict[str, Any]:
             answer += "Keep tracking to identify savings opportunities."
         return analytics_answer(answer, {"income": str(income), "expense": str(expense), "profit": str(profit)})
 
-    if any(word in lowered for word in ["cash flow", "improve cash", "cash"]):
-        advice = []
-        if expense > income:
-            advice.append("Your expenses currently exceed income. Review recurring costs and delay non-essential spending.")
-        if top_expense_category:
-            advice.append(f"Your top expense category is {top_expense_category}; look for cheaper suppliers or reduce volume there first.")
-        advice.append("Send invoices faster, follow up on late payments, and keep a small cash buffer.")
-        return {"answer": " ".join(advice) or "Keep monitoring income and expenses to improve cash flow.", "type": "advice", "data": {}, "conversation_id": conversation_id}
-
-    if any(word in lowered for word in ["proposal", "pitch", "customer proposal"]):
-        return {"answer": f"Proposal draft for {business_name}: we deliver reliable value with clear pricing, timelines, and measurable outcomes. Include your strongest results, package terms in {currency}, and make next steps easy to accept.", "type": "advice", "data": {}, "conversation_id": conversation_id}
-
-    if any(word in lowered for word in ["revenue", "increase revenue", "grow"]):
-        return {"answer": "Increase revenue by focusing on your best-selling category, raising prices slightly for high-value work, offering small add-ons, and asking satisfied customers for referrals.", "type": "advice", "data": {}, "conversation_id": conversation_id}
-
-    if any(word in lowered for word in ["risk", "risks", "watch"]):
-        return {"answer": f"Watch these risks: overspending in {top_expense_category or 'any category' if expense_by_cat else 'untracked areas'}, late customer payments, cash gaps between spending and income, and unclear pricing. Track them early.", "type": "advice", "data": {}, "conversation_id": conversation_id}
-
-    if any(word in lowered for word in ["hi", "hello", "how are you", "who are you"]):
-        return {"answer": "I'm your offline LedgerMate Business Copilot. Ask me about your expenses, income, cash flow, proposals, or general business advice.", "type": "conversation", "data": {}, "conversation_id": conversation_id}
-
-    if "business name" in lowered or "my name" in lowered:
-        name = business_profile.get("business_name") or business_profile.get("owner_name")
-        if name:
-            return {"answer": f"Your configured business name is: {name}", "type": "business_context", "data": {"business_name": name}, "conversation_id": conversation_id}
-        return {"answer": "I don't have your business name yet. Please add it in Settings → Business Profile.", "type": "business_context", "data": {}, "conversation_id": conversation_id}
-
     try:
         prompt = "\n".join(
             [
@@ -456,14 +429,16 @@ def assistant_query(input_data: AssistantQuery) -> dict[str, Any]:
         raw_answer = run_llama(prompt, max_tokens=256)
         answer = _sanitize_assistant_answer(q, raw_answer)
         return {"answer": answer.strip(), "type": "ai", "data": {}, "conversation_id": conversation_id}
-    except Exception:
-        return {"answer": "I couldn't process that. Try asking about your expenses, income, cash flow, or business summary.", "type": "error", "data": {}, "conversation_id": conversation_id}
+    except Exception as exc:
+        return {"answer": f"Local AI error: {exc}", "type": "error", "data": {"error": str(exc)}, "conversation_id": conversation_id}
 
 
 from ledgermate.ledger import Ledger as _Ledger
 
 def _get_ledger() -> _Ledger:
     return _Ledger(DB_PATH)
+
+
 
 
 @app.delete("/api/transactions/{transaction_id}")
